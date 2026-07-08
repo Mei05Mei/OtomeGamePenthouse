@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>✦ The Penthouse ✦</title>
+<style>
+:root{
+  --bg-dark:#0d0d1a;--bg-panel:#13131f;--bg-card:#1a1a2e;--bg-input:#1e1e30;
+  --accent-pink:#e040a0;--accent-purple:#9b59b6;--accent-blue:#5b8dee;
+  --text-main:#e8e0f0;--text-muted:#8878aa;--text-dim:#554a6a;--border:#2a2040;
+  --kai:#ff69b4;--ren:#82c0e8;--yuki:#c792ea;--dom:#ff7b5e;--ash:#90a4ae;
+  --player:#69e89a;--bad:#cc3333;--dark-meter:#8b1a1a;
+  --radius:12px;--radius-sm:8px;--sidebar-w:210px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg-dark);color:var(--text-main);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}
+
+/* ───────────── SETUP ───────────── */
+#setup-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  height:100%;overflow-y:auto;padding:28px 16px 40px;
+  background:radial-gradient(ellipse at 50% 0%,#1e0038 0%,var(--bg-dark) 70%);
+}
+.setup-logo{font-size:2.4rem;font-weight:900;letter-spacing:.06em;text-align:center;
+  background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple),var(--accent-blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.setup-sub{color:var(--text-muted);font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:28px;text-align:center}
+.setup-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 26px;width:100%;max-width:430px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 8px 40px rgba(160,50,200,.15)}
+.setup-card h2{font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.fg input,.fg select{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-main);font-size:.9rem;padding:9px 13px;outline:none;transition:border-color .2s;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--accent-purple)}
+.fg select option{background:var(--bg-card)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#gender-stats{overflow:hidden;transition:max-height .4s ease,opacity .3s ease;max-height:0;opacity:0;display:flex;flex-direction:column;gap:12px}
+#gender-stats.visible{max-height:500px;opacity:1}
+.gender-sec-title{font-size:.75rem;color:var(--accent-pink);text-transform:uppercase;letter-spacing:.1em;
+  padding-top:4px;border-top:1px solid var(--border)}
+.btn-start{margin-top:6px;padding:12px;
+  background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple));
+  border:none;border-radius:var(--radius-sm);color:#fff;font-size:.95rem;font-weight:700;
+  letter-spacing:.06em;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn-start:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ───────────── GAME ───────────── */
+#game-screen{display:none;flex:1;overflow:hidden;min-height:0}
+#game-screen.active{display:flex}
+
+/* Sidebar */
+#sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--bg-panel);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  padding:14px 10px;gap:10px;overflow-y:auto;transition:transform .3s ease}
+.sb-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);
+  padding-bottom:7px;border-bottom:1px solid var(--border)}
+.li-card{display:flex;flex-direction:column;gap:3px;cursor:pointer;
+  padding:5px 4px;border-radius:6px;transition:background .15s}
+.li-card:hover{background:rgba(255,255,255,.04)}
+.li-hdr{display:flex;align-items:center;gap:6px}
+.li-av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;flex-shrink:0;font-weight:bold}
+.li-name{font-size:.78rem;font-weight:600;flex:1}
+.li-pct{font-size:.68rem;color:var(--text-muted);min-width:28px;text-align:right}
+.meter-track{background:var(--bg-dark);border-radius:99px;height:4px;overflow:hidden;margin:1px 0}
+.meter-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.dark-track{background:#200505;border-radius:99px;height:3px;overflow:hidden}
+.dark-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#8b1a1a,#cc3333);transition:width .6s ease}
+.dark-label{font-size:.6rem;color:#cc5555;letter-spacing:.05em}
+
+.sb-chapter{font-size:.65rem;color:var(--text-dim);text-align:center;
+  padding-top:10px;border-top:1px solid var(--border);line-height:1.5;margin-top:auto}
+.sb-actions{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.sb-btn{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;
+  color:var(--text-muted);font-size:.72rem;padding:7px 10px;cursor:pointer;
+  text-align:center;transition:border-color .2s,color .2s}
+.sb-btn:hover{border-color:var(--accent-purple);color:var(--text-main)}
+
+/* Chat */
+#chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#chat-header{background:var(--bg-panel);border-bottom:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ch-icon{font-size:1.1rem}
+.ch-name{font-weight:700;font-size:.9rem}
+.ch-members{font-size:.7rem;color:var(--text-muted)}
+.ch-hamburger{margin-left:auto;background:none;border:1px solid var(--border);
+  border-radius:6px;color:var(--text-muted);padding:5px 8px;cursor:pointer;font-size:.8rem;display:none}
+
+#messages{flex:1;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:3px;scroll-behavior:smooth;min-height:0}
+.msg-row{display:flex;align-items:flex-end;gap:6px;max-width:78%;animation:fsu .22s ease both}
+@keyframes fsu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.player-row{align-self:flex-end;flex-direction:row-reverse}
+.msg-row.npc-row{align-self:flex-start}
+.msg-av{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:bold;flex-shrink:0;align-self:flex-end}
+.msg-content{display:flex;flex-direction:column;gap:2px}
+.msg-sname{font-size:.66rem;color:var(--text-muted);margin-bottom:1px;padding-left:2px}
+.msg-bubble{padding:8px 12px;border-radius:15px;font-size:.85rem;line-height:1.45;word-wrap:break-word}
+.npc-row .msg-bubble{border-bottom-left-radius:4px;background:var(--bg-card);border:1px solid var(--border)}
+.player-row .msg-bubble{border-bottom-right-radius:4px;background:linear-gradient(135deg,#1b4332,#155e42);
+  border:1px solid #2d6a4f;color:#d8f3dc}
+.msg-narration{align-self:center;text-align:center;font-size:.75rem;color:var(--text-muted);
+  font-style:italic;padding:5px 14px;border:1px solid var(--border);border-radius:99px;
+  background:var(--bg-panel);margin:5px 0;animation:fsu .22s ease both}
+.msg-chapter{align-self:center;text-align:center;padding:9px 22px;margin:12px 0;
+  background:linear-gradient(135deg,rgba(154,50,200,.15),rgba(90,100,230,.15));
+  border:1px solid rgba(154,50,200,.3);border-radius:99px;font-size:.82rem;font-weight:700;
+  letter-spacing:.08em;color:#c7b4f0;animation:fsu .28s ease both}
+.msg-spicy{align-self:center;text-align:center;padding:8px 20px;margin:8px 0;
+  background:linear-gradient(135deg,rgba(220,50,50,.1),rgba(200,20,100,.1));
+  border:1px solid rgba(200,50,50,.3);border-radius:99px;font-size:.75rem;
+  color:#e88;animation:fsu .22s ease both}
+.typing-row{align-self:flex-start;display:flex;align-items:center;gap:6px;padding:3px 0;animation:fsu .18s ease both}
+.typing-name{font-size:.68rem;color:var(--text-muted)}
+.typing-dots{display:flex;gap:3px;align-items:center}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--text-dim);animation:bounce 1.1s infinite}
+.typing-dots span:nth-child(2){animation-delay:.18s}
+.typing-dots span:nth-child(3){animation-delay:.36s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+/* Choices */
+#choices-area{background:var(--bg-panel);border-top:1px solid var(--border);
+  padding:10px 12px;display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#choices-area.hidden{display:none}
+.choices-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1px}
+.choice-wrap{display:flex;flex-direction:column;gap:2px}
+.choice-btn{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-main);font-size:.82rem;padding:9px 12px;text-align:left;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .1s;line-height:1.4}
+.choice-btn:hover{background:#1f1f38;border-color:var(--accent-purple);transform:translateX(2px)}
+.choice-effects{font-size:.65rem;color:var(--text-dim);padding:0 3px 2px;display:flex;flex-wrap:wrap;gap:4px}
+.effect-tag{padding:1px 6px;border-radius:99px;font-size:.62rem;font-weight:600}
+.effect-pos{background:rgba(100,220,130,.12);color:#7edb9b;border:1px solid rgba(100,220,130,.2)}
+.effect-neg{background:rgba(220,80,80,.12);color:#e88;border:1px solid rgba(220,80,80,.2)}
+.effect-dark{background:rgba(150,30,30,.2);color:#cc6666;border:1px solid rgba(150,30,30,.3)}
+
+/* Affection pop */
+.aff-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-60%) scale(.8);
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:7px 16px;font-size:.82rem;font-weight:600;pointer-events:none;z-index:999;
+  opacity:0;transition:all .2s;white-space:nowrap}
+.aff-pop.show{opacity:1;transform:translate(-50%,-70%) scale(1)}
+
+/* ───────────── MODALS ───────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 60px rgba(0,0,0,.6)}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hdr h3{font-size:1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{color:var(--text-main);background:var(--bg-input)}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.btn-secondary{background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-muted);font-size:.85rem;padding:8px 16px;cursor:pointer;transition:color .2s}
+.btn-secondary:hover{color:var(--text-main)}
+.btn-primary{background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple));
+  border:none;border-radius:var(--radius-sm);color:#fff;font-size:.85rem;font-weight:700;
+  padding:8px 18px;cursor:pointer;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+
+/* Character info card */
+.char-info-card{background:var(--bg-input);border-radius:var(--radius-sm);padding:14px;
+  display:flex;flex-direction:column;gap:10px}
+.char-info-hdr{display:flex;align-items:center;gap:10px}
+.char-info-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:bold;flex-shrink:0}
+.char-info-name{font-size:1.1rem;font-weight:700}
+.char-info-sub{font-size:.75rem;color:var(--text-muted)}
+.char-info-desc{font-size:.82rem;color:var(--text-muted);line-height:1.55}
+.char-info-trait{font-size:.75rem;padding:4px 10px;border-radius:99px;display:inline-flex;width:fit-content}
+.char-meter-row{display:flex;flex-direction:column;gap:5px}
+.char-meter-label{font-size:.72rem;color:var(--text-muted);display:flex;justify-content:space-between}
+
+/* Char select tabs */
+.char-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 0}
+.char-tab{background:var(--bg-input);border:1px solid var(--border);border-radius:99px;
+  padding:5px 12px;font-size:.75rem;cursor:pointer;transition:all .15s;color:var(--text-muted)}
+.char-tab.active{color:#fff;border-color:transparent}
+
+/* Stats overview */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-item{background:var(--bg-input);border-radius:var(--radius-sm);padding:10px 12px}
+.stat-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.stat-val{font-size:.9rem;font-weight:600}
+.stat-bars{display:flex;flex-direction:column;gap:8px}
+.stat-bar-row{display:flex;flex-direction:column;gap:3px}
+.stat-bar-label{font-size:.72rem;display:flex;justify-content:space-between}
+
+/* End screen */
+#end-screen{display:none;position:fixed;inset:0;background:var(--bg-dark);
+  z-index:2000;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;text-align:center;gap:20px;overflow-y:auto}
+#end-screen.open{display:flex}
+.end-title{font-size:2rem;font-weight:900;letter-spacing:.06em}
+.end-sub{font-size:.95rem;color:var(--text-muted);max-width:480px;line-height:1.7}
+.end-content{font-size:.88rem;color:var(--text-main);max-width:500px;line-height:1.8;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px}
+.btn-replay{background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple));
+  border:none;border-radius:var(--radius-sm);color:#fff;font-size:.95rem;font-weight:700;
+  padding:12px 28px;cursor:pointer;margin-top:8px}
+
+/* Scrollbars */
+#messages::-webkit-scrollbar{width:3px}
+#messages::-webkit-scrollbar-track{background:transparent}
+#messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.modal::-webkit-scrollbar{width:4px}
+.modal::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* Responsive */
+@media(max-width:720px){
+  :root{--sidebar-w:0px}
+  #sidebar{position:fixed;left:0;top:0;bottom:0;width:200px;z-index:500;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  .ch-hamburger{display:block}
+}
+@media(max-width:480px){
+  .msg-row{max-width:90%}
+  .setup-card{padding:18px 18px}
+  .modal-body{padding:14px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP ══ -->
+<div id="setup-screen">
+  <div class="setup-logo">✦ THE PENTHOUSE ✦</div>
+  <div class="setup-sub">An Otome Visual Novel · 20 Chapters</div>
+  <div class="setup-card">
+    <h2>Create Your Character</h2>
+    <div class="fg"><label>Name</label><input id="s-name" placeholder="Enter your name…" maxlength="22"></div>
+    <div class="field-row">
+      <div class="fg"><label>Age</label><input type="number" id="s-age" placeholder="e.g. 21" min="18" max="99"></div>
+      <div class="fg"><label>Gender</label>
+        <select id="s-gender">
+          <option value="">— Select —</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="nonbinary">Non-binary</option>
+        </select>
+      </div>
+    </div>
+    <div id="gender-stats">
+      <div class="gender-sec-title" id="gender-sec-lbl">Physical Stats</div>
+      <div class="field-row">
+        <div class="fg"><label>Height</label><input id="s-height" placeholder="e.g. 5′4″"></div>
+        <div class="fg"><label>Weight</label><input id="s-weight" placeholder="e.g. 120 lbs"></div>
+      </div>
+      <div id="female-fields">
+        <div class="field-row">
+          <div class="fg"><label>Waist</label><input id="s-waist" placeholder="e.g. 24 in"></div>
+          <div class="fg"><label>Cup Size</label>
+            <select id="s-cup">
+              <option value="">— Select —</option>
+              <option>AA</option><option>A</option><option>B</option><option>C</option>
+              <option>D</option><option>D+</option><option>DD</option><option>DDD/E</option>
+              <option>F</option><option>G</option><option>G+</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="male-fields" style="display:none">
+        <div class="field-row">
+          <div class="fg"><label>Body Type</label>
+            <select id="s-bodytype">
+              <option value="">— Select —</option>
+              <option>Slim</option><option>Athletic</option><option>Muscular</option>
+              <option>Stocky</option><option>Heavyset</option>
+            </select>
+          </div>
+          <div class="fg"><label>D*ck Size</label><input id="s-dicksize" placeholder="e.g. 7 in"></div>
+        </div>
+      </div>
+      <div id="nb-fields" style="display:none">
+        <div class="fg"><label>Body Type</label>
+          <select id="s-bodytype-nb">
+            <option value="">— Select —</option>
+            <option>Petite</option><option>Slim</option><option>Athletic</option>
+            <option>Curvy</option><option>Muscular</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startGame()">✦ Begin Story ✦</button>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="game-screen">
+  <div id="sidebar">
+    <div class="sb-title">♡ Love &amp; Obsession</div>
+    <div id="li-cards"></div>
+    <div class="sb-actions">
+      <button class="sb-btn" onclick="openEditProfile()">✏️ Edit Profile</button>
+      <button class="sb-btn" onclick="openCharInfo()">👤 Character Info</button>
+      <button class="sb-btn" onclick="openStats()">📊 View Stats</button>
+    </div>
+    <div class="sb-chapter" id="sb-chapter">Prologue</div>
+  </div>
+
+  <div id="chat-main">
+    <div id="chat-header">
+      <div class="ch-icon">💬</div>
+      <div><div class="ch-name">The Penthouse 🏙️</div><div class="ch-members">Kai · Ren · Yuki · Dominique · Ash · You</div></div>
+      <button class="ch-hamburger" onclick="toggleSidebar()">☰</button>
+    </div>
+    <div id="messages"></div>
+    <div id="choices-area" class="hidden">
+      <div class="choices-label">Your reply…</div>
+      <div id="choices-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<!-- Edit Profile -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-hdr"><h3>✏️ Edit Profile</h3><button class="modal-close" onclick="closeModal('modal-edit')">✕</button></div>
+    <div class="modal-body" id="edit-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-edit')">Cancel</button>
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Char Info -->
+<div class="modal-overlay" id="modal-chars">
+  <div class="modal">
+    <div class="modal-hdr"><h3>👤 Love Interests</h3><button class="modal-close" onclick="closeModal('modal-chars')">✕</button></div>
+    <div style="padding:12px 20px 0"><div class="char-tabs" id="char-tabs"></div></div>
+    <div class="modal-body" id="char-info-body"></div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="modal-overlay" id="modal-stats">
+  <div class="modal">
+    <div class="modal-hdr"><h3>📊 Status Overview</h3><button class="modal-close" onclick="closeModal('modal-stats')">✕</button></div>
+    <div class="modal-body" id="stats-body"></div>
+  </div>
+</div>
+
+<!-- End Screen -->
+<div id="end-screen">
+  <div class="end-title" id="end-title"></div>
+  <div class="end-sub" id="end-sub"></div>
+  <div class="end-content" id="end-content"></div>
+  <button class="btn-replay" onclick="replayGame()">↺ Play Again</button>
+</div>
+
+<div class="aff-pop" id="aff-pop"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+const G={
+  player:{},
+  love:{Kai:0,Ren:0,Yuki:0,Dominique:0,Ash:0},
+  dark:{Kai:0,Ren:0,Yuki:0,Dominique:0,Ash:0},
+  flags:{},
+  chapter:'Prologue',
+  sceneDepth:0,
+  gameStarted:false,
+};
+
+// Character metadata
+const CHARS={
+  Kai:{color:'var(--kai)',bg:'#3d1a2a',init:'K',emoji:'🌸',
+    name:'Kai Nakamura',age:21,year:'3rd Year',major:'Architecture',
+    type:'The Caretaker',
+    desc:'Warm, attentive, and endlessly patient. Kai is the unofficial "mom" of the group — always the first to check if you\'ve eaten, the last to sleep before everyone\'s home safe. Beneath his sunshine exterior is a quiet loneliness he\'s never let anyone close enough to see.',
+    trait:'Will worry about you before himself',traitColor:'rgba(255,105,180,.15)',traitBorder:'rgba(255,105,180,.3)',traitText:'var(--kai)',
+    route:'Discovering what\'s behind Kai\'s gentle smile — and the moment he stops hiding it.'},
+  Ren:{color:'var(--ren)',bg:'#0d1e2a',init:'R',emoji:'❄️',
+    name:'Ren Ashford',age:23,year:'4th Year',major:'Pre-Law',
+    type:'The Ice King',
+    desc:'Cold on the outside, devastatingly precise in everything he does. Ren doesn\'t waste words or warmth on people who haven\'t earned them. He\'s the most self-controlled person you\'ve ever met — until you make him lose it.',
+    trait:'Would die before admitting he cares',traitColor:'rgba(130,192,232,.15)',traitBorder:'rgba(130,192,232,.3)',traitText:'var(--ren)',
+    route:'The slow, agonizing process of melting someone made of ice — and the fire underneath.'},
+  Yuki:{color:'var(--yuki)',bg:'#1a0d2a',init:'Y',emoji:'🌙',
+    name:'Yuki Tanaka',age:20,year:'2nd Year',major:'Psychology',
+    type:'The Devoted 🌑',
+    desc:'Soft-spoken, gentle-eyed, and deeply attentive. Yuki notices everything about you — your schedule, your moods, the light in your window at night. His love is absolute and consuming. The question is whether it\'s beautiful or terrifying... or both.',
+    trait:'He keeps a note of every little thing you\'ve said',traitColor:'rgba(199,146,234,.15)',traitBorder:'rgba(199,146,234,.3)',traitText:'var(--yuki)',
+    route:'Understanding the line between devotion and obsession — and choosing which side you\'re on.'},
+  Dominique:{color:'var(--dom)',bg:'#2a1208',init:'D',emoji:'🔥',
+    name:'Dominique Cruz',age:22,year:'3rd Year',major:'Communications',
+    type:'The Flirt',
+    desc:'Loud, shameless, and impossible to ignore. Dominique turns flirting into an art form and has no filter whatsoever. But underneath the relentless charm and inappropriate commentary is someone who uses humor to keep people from seeing how much he actually feels.',
+    trait:'Says everything except what he really means',traitColor:'rgba(255,123,94,.15)',traitBorder:'rgba(255,123,94,.3)',traitText:'var(--dom)',
+    route:'The moment Dominique stops joking and means every word.'},
+  Ash:{color:'var(--ash)',bg:'#111820',init:'A',emoji:'🖤',
+    name:'Ash Wolfe',age:23,year:'4th Year',major:'Computer Science',
+    type:'The Ghost',
+    desc:'Speaks rarely, sees everything. Ash knows the building\'s camera schedules, everyone\'s class times, and what you ordered for delivery three Tuesdays ago. He\'s not a stalker — he just pays attention when no one else does. And he always has since the first night you arrived.',
+    trait:'Already knew everything about you before you said a word',traitColor:'rgba(144,164,174,.15)',traitBorder:'rgba(144,164,174,.3)',traitText:'var(--ash)',
+    route:'Learning to trust the person who watches from the dark — and what he does with your secrets.'},
+};
+
+// ════════════════════════════════════════════
+//  SETUP SCREEN
+// ════════════════════════════════════════════
+document.getElementById('s-gender').addEventListener('change',function(){
+  const v=this.value;
+  const gs=document.getElementById('gender-stats');
+  document.getElementById('female-fields').style.display='none';
+  document.getElementById('male-fields').style.display='none';
+  document.getElementById('nb-fields').style.display='none';
+  if(!v){gs.classList.remove('visible');return}
+  gs.classList.add('visible');
+  if(v==='female')document.getElementById('female-fields').style.display='block';
+  else if(v==='male')document.getElementById('male-fields').style.display='block';
+  else document.getElementById('nb-fields').style.display='block';
+});
+
+function startGame(){
+  const name=document.getElementById('s-name').value.trim();
+  const age=document.getElementById('s-age').value.trim();
+  const gender=document.getElementById('s-gender').value;
+  if(!name)return alert('Please enter your name!');
+  if(!age)return alert('Please enter your age!');
+  if(!gender)return alert('Please select your gender!');
+  G.player={
+    name,age,gender,
+    height:document.getElementById('s-height').value.trim()||'?',
+    weight:document.getElementById('s-weight').value.trim()||'?',
+    waist:document.getElementById('s-waist')?.value.trim()||'',
+    cup:document.getElementById('s-cup')?.value||'',
+    bodytype:(document.getElementById('s-bodytype')?.value||document.getElementById('s-bodytype-nb')?.value||''),
+    dicksize:document.getElementById('s-dicksize')?.value.trim()||'',
+  };
+  document.getElementById('setup-screen').style.display='none';
+  const gs=document.getElementById('game-screen');
+  gs.style.display='flex';
+  gs.classList.add('active');
+  buildSidebar();
+  setTimeout(()=>runScene(PROLOGUE),600);
+}
+
+// ════════════════════════════════════════════
+//  SIDEBAR
+// ════════════════════════════════════════════
+function buildSidebar(){
+  const c=document.getElementById('li-cards');
+  c.innerHTML='';
+  for(const id of Object.keys(CHARS)){
+    const ch=CHARS[id];
+    c.innerHTML+=`<div class="li-card" onclick="openCharInfoFor('${id}')">
+      <div class="li-hdr">
+        <div class="li-av" style="background:${ch.bg};color:${ch.color}">${ch.init}</div>
+        <span class="li-name" style="color:${ch.color}">${id==='Dominique'?'Dom':id}</span>
+        <span class="li-pct" id="pct-${id}">0%</span>
+      </div>
+      <div class="meter-track"><div class="meter-fill" id="fill-${id}" style="width:0%;background:${ch.color}"></div></div>
+      <div class="dark-label">🌑 <span id="dark-pct-${id}">0%</span></div>
+      <div class="dark-track"><div class="dark-fill" id="dark-fill-${id}" style="width:0%"></div></div>
+    </div>`;
+  }
+}
+
+function updateMeters(){
+  for(const id of Object.keys(CHARS)){
+    const lv=G.love[id]??0;const dv=G.dark[id]??0;
+    const f=document.getElementById('fill-'+id);
+    const p=document.getElementById('pct-'+id);
+    const df=document.getElementById('dark-fill-'+id);
+    const dp=document.getElementById('dark-pct-'+id);
+    if(f)f.style.width=lv+'%';
+    if(p)p.textContent=lv+'%';
+    if(df)df.style.width=dv+'%';
+    if(dp)dp.textContent=dv+'%';
+  }
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ════════════════════════════════════════════
+//  AFFECTION SYSTEM
+// ════════════════════════════════════════════
+function applyEffects(effects){
+  if(!effects)return;
+  const parts=[];
+  for(const[k,v]of Object.entries(effects)){
+    if(k.startsWith('dark_')){
+      const id=k.replace('dark_','');
+      if(id in G.dark){G.dark[id]=Math.max(0,Math.min(100,G.dark[id]+v));parts.push(`🌑${v>0?'+':''}${v} ${id}`)}
+    }else if(k in G.love){
+      G.love[k]=Math.max(0,Math.min(100,(G.love[k]||0)+v));
+      parts.push(`${CHARS[k]?.emoji||'♡'}${v>0?'+':''}${v} ${k}`);
+    }
+  }
+  updateMeters();
+  if(parts.length)showAffPop(parts.join(' · '));
+}
+
+function showAffPop(text){
+  const el=document.getElementById('aff-pop');
+  el.textContent=text;
+  el.style.color=text.includes('+')?'#69e89a':'#ff8888';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+// ════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════
+const msgs=document.getElementById('messages');
+function scrollBot(){msgs.scrollTo({top:msgs.scrollHeight,behavior:'smooth'})}
+
+function renderNarration(text,isSpicy=false){
+  const el=document.createElement('div');
+  el.className=isSpicy?'msg-spicy':'msg-narration';
+  el.textContent=text;
+  msgs.appendChild(el);scrollBot();
+}
+
+function renderChapter(text){
+  const el=document.createElement('div');
+  el.className='msg-chapter';el.textContent=text;
+  msgs.appendChild(el);scrollBot();
+  document.getElementById('sb-chapter').textContent=text;
+}
+
+function renderMessage(speaker,text,isPlayer=false){
+  const row=document.createElement('div');
+  row.className='msg-row '+(isPlayer?'player-row':'npc-row');
+  const ch=CHARS[speaker];
+  const av=document.createElement('div');av.className='msg-av';
+  if(isPlayer){av.style.cssText='background:#155e42;color:var(--player)';av.textContent=(G.player.name||'P')[0].toUpperCase()}
+  else if(ch){av.style.cssText=`background:${ch.bg};color:${ch.color}`;av.textContent=ch.init}
+  const content=document.createElement('div');content.className='msg-content';
+  if(!isPlayer&&speaker){
+    const nm=document.createElement('div');nm.className='msg-sname';
+    nm.textContent=ch?`${ch.emoji} ${speaker}`:speaker;
+    if(ch)nm.style.color=ch.color;
+    content.appendChild(nm);
+  }
+  const bub=document.createElement('div');bub.className='msg-bubble';
+  if(isPlayer)bub.textContent=text;else bub.innerHTML=text;
+  content.appendChild(bub);
+  row.appendChild(av);row.appendChild(content);
+  msgs.appendChild(row);scrollBot();
+}
+
+function showTyping(speaker){
+  const row=document.createElement('div');row.className='typing-row';row.id='typ-'+speaker;
+  const ch=CHARS[speaker];
+  row.innerHTML=`<span class="typing-name" style="color:${ch?ch.color:'#888'}">${speaker}</span>
+    <div class="typing-dots"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(row);scrollBot();return row;
+}
+function removeTyping(speaker){const el=document.getElementById('typ-'+speaker);if(el)el.remove()}
+
+// ════════════════════════════════════════════
+//  SCENE ENGINE
+// ════════════════════════════════════════════
+function resolveText(text,p){
+  if(!p||typeof text!=='string')return text||'';
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return text
+    .replace(/\{name\}/g,esc(p.name)).replace(/\{age\}/g,esc(p.age))
+    .replace(/\{height\}/g,esc(p.height)).replace(/\{weight\}/g,esc(p.weight))
+    .replace(/\{waist\}/g,esc(p.waist||'your waist')).replace(/\{cup\}/g,esc(p.cup||'your size'))
+    .replace(/\{bodytype\}/g,esc(p.bodytype||'your build')).replace(/\{dicksize\}/g,esc(p.dicksize||'your size'))
+    .replace(/\{he_she\}/g,p.gender==='male'?'he':p.gender==='female'?'she':'they')
+    .replace(/\{him_her\}/g,p.gender==='male'?'him':p.gender==='female'?'her':'them')
+    .replace(/\{his_her\}/g,p.gender==='male'?'his':p.gender==='female'?'her':'their');
+}
+
+function getEffectTags(effects){
+  if(!effects)return'';
+  return Object.entries(effects).map(([k,v])=>{
+    if(k.startsWith('dark_')){const id=k.replace('dark_','');return`<span class="effect-tag effect-dark">🌑${v>0?'+':''}${v} ${id}</span>`}
+    if(k in G.love){const ch=CHARS[k];return`<span class="effect-tag ${v>0?'effect-pos':'effect-neg'}">${ch?.emoji||'♡'}${v>0?'+':''}${v} ${k}</span>`}
+    return'';
+  }).join('');
+}
+
+async function runScene(beats){
+  G.sceneDepth++;
+  const p=G.player;
+  for(let i=0;i<beats.length;i++){
+    let beat=beats[i];
+    if(typeof beat==='function')beat=beat(p);
+    if(!beat)continue;
+    const t=beat.type;
+    if(t==='narration'){await delay(320);renderNarration(resolveText(beat.text,p),beat.spicy);await delay(380)}
+    else if(t==='chapter'){await delay(500);renderChapter(beat.text);G.chapter=beat.text;await delay(600)}
+    else if(t==='message'){
+      const td=Math.min((beat.text?.length||30)*25+500,2800);
+      const el=showTyping(beat.speaker);await delay(td);el.remove();
+      renderMessage(beat.speaker,resolveText(beat.text,p));await delay(beat.delay||280);
+    }
+    else if(t==='player'){await delay(200);renderMessage('__p__',resolveText(beat.text,p),true);await delay(260)}
+    else if(t==='choice'){await showChoicesAsync(beat.options,p)}
+    else if(t==='flag'){G.flags[beat.key]=beat.value}
+    else if(t==='branch'&&beat.scene){await runScene(beat.scene)}
+    else if(t==='end'){showEnding(beat.which);break}
+    else if(t==='check'){checkEndings();break}
+  }
+  G.sceneDepth--;
+}
+
+function showChoicesAsync(options,p){
+  return new Promise(resolve=>{
+    const area=document.getElementById('choices-area');
+    const list=document.getElementById('choices-list');
+    area.classList.remove('hidden');list.innerHTML='';
+    options.forEach(opt=>{
+      const rawText=typeof opt.text==='function'?opt.text(p):opt.text;
+      const resolved=resolveText(rawText,p);
+      const wrap=document.createElement('div');wrap.className='choice-wrap';
+      const btn=document.createElement('button');btn.className='choice-btn';btn.textContent=resolved;
+      const efDiv=document.createElement('div');efDiv.className='choice-effects';
+      efDiv.innerHTML=getEffectTags(opt.effects);
+      wrap.appendChild(btn);wrap.appendChild(efDiv);list.appendChild(wrap);
+      btn.onclick=async()=>{
+        area.classList.add('hidden');list.innerHTML='';
+        renderMessage('__p__',resolved,true);await delay(280);
+        if(opt.effects)applyEffects(opt.effects);
+        if(opt.flag)G.flags[opt.flag.key]=opt.flag.value;
+        if(opt.response)await runScene(opt.response);
+        resolve(opt);
+      };
+    });
+    scrollBot();
+  });
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+
+// ════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+function openEditProfile(){
+  const p=G.player;
+  const b=document.getElementById('edit-body');
+  const gf=p.gender==='female';const gm=p.gender==='male';
+  b.innerHTML=`
+    <div class="fg"><label>Name</label><input id="ep-name" value="${esc(p.name)}"></div>
+    <div class="field-row">
+      <div class="fg"><label>Height</label><input id="ep-height" value="${esc(p.height)}"></div>
+      <div class="fg"><label>Weight</label><input id="ep-weight" value="${esc(p.weight)}"></div>
+    </div>
+    ${gf?`<div class="field-row">
+      <div class="fg"><label>Waist</label><input id="ep-waist" value="${esc(p.waist)}"></div>
+      <div class="fg"><label>Cup Size</label>
+        <select id="ep-cup">
+          ${['AA','A','B','C','D','D+','DD','DDD/E','F','G','G+'].map(s=>`<option${p.cup===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </div></div>`:''}
+    ${gm?`<div class="field-row">
+      <div class="fg"><label>Body Type</label>
+        <select id="ep-bodytype">
+          ${['Slim','Athletic','Muscular','Stocky','Heavyset'].map(s=>`<option${p.bodytype===s?' selected':''}>${s}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label>D*ck Size</label><input id="ep-dicksize" value="${esc(p.dicksize)}"></div></div>`:''}
+    ${(!gf&&!gm)?`<div class="fg"><label>Body Type</label>
+      <select id="ep-bodytype">
+        ${['Petite','Slim','Athletic','Curvy','Muscular'].map(s=>`<option${p.bodytype===s?' selected':''}>${s}</option>`).join('')}
+      </select></div>`:''}
+  `;
+  openModal('modal-edit');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
+function saveProfile(){
+  const p=G.player;
+  p.name=document.getElementById('ep-name')?.value.trim()||p.name;
+  p.height=document.getElementById('ep-height')?.value.trim()||p.height;
+  p.weight=document.getElementById('ep-weight')?.value.trim()||p.weight;
+  if(p.gender==='female'){
+    p.waist=document.getElementById('ep-waist')?.value.trim()||p.waist;
+    p.cup=document.getElementById('ep-cup')?.value||p.cup;
+  }else if(p.gender==='male'){
+    p.bodytype=document.getElementById('ep-bodytype')?.value||p.bodytype;
+    p.dicksize=document.getElementById('ep-dicksize')?.value.trim()||p.dicksize;
+  }else{p.bodytype=document.getElementById('ep-bodytype')?.value||p.bodytype}
+  closeModal('modal-edit');
+  showAffPop('Profile updated! ✓');
+}
+
+let _activeCharTab='Kai';
+function openCharInfo(){_activeCharTab='Kai';renderCharTabs();renderCharInfoBody();openModal('modal-chars')}
+function openCharInfoFor(id){_activeCharTab=id;renderCharTabs();renderCharInfoBody();openModal('modal-chars')}
+
+function renderCharTabs(){
+  const c=document.getElementById('char-tabs');c.innerHTML='';
+  for(const id of Object.keys(CHARS)){
+    const ch=CHARS[id];
+    const btn=document.createElement('button');btn.className='char-tab'+(id===_activeCharTab?' active':'');
+    btn.textContent=ch.emoji+' '+(id==='Dominique'?'Dom':id);
+    if(id===_activeCharTab)btn.style.cssText=`background:${ch.color};border-color:${ch.color};color:#fff`;
+    btn.onclick=()=>{_activeCharTab=id;renderCharTabs();renderCharInfoBody()};
+    c.appendChild(btn);
+  }
+}
+
+function renderCharInfoBody(){
+  const id=_activeCharTab;const ch=CHARS[id];
+  const lv=G.love[id]||0;const dv=G.dark[id]||0;
+  document.getElementById('char-info-body').innerHTML=`
+    <div class="char-info-card">
+      <div class="char-info-hdr">
+        <div class="char-info-av" style="background:${ch.bg};color:${ch.color}">${ch.init}</div>
+        <div>
+          <div class="char-info-name" style="color:${ch.color}">${ch.name} ${ch.emoji}</div>
+          <div class="char-info-sub">${ch.age} · ${ch.year} · ${ch.major}</div>
+        </div>
+      </div>
+      <div class="char-info-trait" style="background:${ch.traitColor};border:1px solid ${ch.traitBorder};color:${ch.traitText}">${ch.type}</div>
+      <div class="char-info-desc">${ch.desc}</div>
+      <div class="char-info-desc" style="color:var(--text-dim);font-style:italic">"${ch.trait}"</div>
+      <div class="char-meter-row">
+        <div class="char-meter-label"><span>💗 Love</span><span>${lv}%</span></div>
+        <div class="meter-track" style="height:6px"><div class="meter-fill" style="width:${lv}%;background:${ch.color}"></div></div>
+        <div class="char-meter-label" style="margin-top:6px"><span>🌑 Obsession</span><span>${dv}%</span></div>
+        <div class="dark-track" style="height:5px"><div class="dark-fill" style="width:${dv}%"></div></div>
+      </div>
+      <div class="char-info-desc"><b style="color:${ch.color}">Their route:</b><br>${ch.route}</div>
+    </div>`;
+}
+
+function openStats(){
+  const p=G.player;
+  const gf=p.gender==='female';const gm=p.gender==='male';
+  let statsGrid=`
+    <div class="stat-item"><div class="stat-label">Name</div><div class="stat-val">${esc(p.name)}</div></div>
+    <div class="stat-item"><div class="stat-label">Age</div><div class="stat-val">${esc(p.age)}</div></div>
+    <div class="stat-item"><div class="stat-label">Gender</div><div class="stat-val" style="text-transform:capitalize">${p.gender}</div></div>
+    <div class="stat-item"><div class="stat-label">Height</div><div class="stat-val">${esc(p.height)}</div></div>
+    <div class="stat-item"><div class="stat-label">Weight</div><div class="stat-val">${esc(p.weight)}</div></div>
+    ${gf?`<div class="stat-item"><div class="stat-label">Waist</div><div class="stat-val">${esc(p.waist||'—')}</div></div>
+      <div class="stat-item"><div class="stat-label">Cup Size</div><div class="stat-val">${esc(p.cup||'—')}</div></div>`:''}
+    ${gm?`<div class="stat-item"><div class="stat-label">Body Type</div><div class="stat-val">${esc(p.bodytype||'—')}</div></div>
+      <div class="stat-item"><div class="stat-label">D*ck Size</div><div class="stat-val">${esc(p.dicksize||'—')}</div></div>`:''}
+    ${(!gf&&!gm)?`<div class="stat-item"><div class="stat-label">Body Type</div><div class="stat-val">${esc(p.bodytype||'—')}</div></div>`:''}
+  `;
+  let barRows='';
+  for(const id of Object.keys(CHARS)){
+    const ch=CHARS[id];const lv=G.love[id]||0;const dv=G.dark[id]||0;
+    barRows+=`<div class="stat-bar-row">
+      <div class="stat-bar-label"><span style="color:${ch.color}">${ch.emoji} ${id}</span>
+        <span>💗 ${lv}% / 🌑 ${dv}%</span></div>
+      <div class="meter-track" style="height:5px"><div class="meter-fill" style="width:${lv}%;background:${ch.color}"></div></div>
+      <div class="dark-track" style="height:4px;margin-top:2px"><div class="dark-fill" style="width:${dv}%"></div></div>
+    </div>`;
+  }
+  document.getElementById('stats-body').innerHTML=`
+    <div style="font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Your Profile</div>
+    <div class="stats-grid">${statsGrid}</div>
+    <div style="font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px">Love &amp; Obsession</div>
+    <div class="stat-bars">${barRows}</div>
+    <div style="font-size:.72rem;color:var(--text-dim);margin-top:12px;line-height:1.6">
+      💡 High Love + Low Obsession = Good/Normal endings.<br>
+      💡 High Obsession (80%+) → Bad Ending risk.<br>
+      💡 All Love 70%+ = Good Ending unlocked.
+    </div>`;
+  openModal('modal-stats');
+}
+
+// ════════════════════════════════════════════
+//  ENDING SYSTEM
+// ════════════════════════════════════════════
+function checkEndings(){
+  const loves=G.love;const darks=G.dark;
+  // Bad ending if player tried to run and any dark >= 85
+  const maxDark=Math.max(...Object.values(darks));
+  if(G.flags.triedToRun&&maxDark>=85){showEnding('bad');return}
+  // Good ending: all love >= 65 and all dark < 60
+  const allLovesHigh=Object.values(loves).every(v=>v>=65);
+  const allDarksLow=Object.values(darks).every(v=>v<60);
+  if(allLovesHigh&&allDarksLow){showEnding('good');return}
+  // Normal: pick highest love character if >=50
+  const sorted=Object.entries(loves).sort((a,b)=>b[1]-a[1]);
+  if(sorted[0][1]>=50){showNormalEnding(sorted[0][0]);return}
+  showEnding('neutral');
+}
+
+function showEnding(which){
+  const p=G.player;
+  const es=document.getElementById('end-screen');
+  const et=document.getElementById('end-title');
+  const esub=document.getElementById('end-sub');
+  const ec=document.getElementById('end-content');
+
+  if(which==='bad'){
+    et.textContent='💀 Bad Ending — The Cage';
+    et.style.color='#cc3333';
+    esub.textContent='You tried to leave. They couldn\'t let you.';
+    ec.innerHTML=`<p>The five of them stood between you and the door, and for the first time you saw it — the cracks in their masks. Yuki's gentle eyes had gone still and dark. Ren had set down his composure like a coat he didn't need anymore. Dominique had stopped smiling. Ash had stepped out of the shadows for once, fully visible. And Kai — sweet, careful Kai — was crying, but his grip on your wrist didn't loosen.</p>
+<p style="margin-top:12px">"You can't leave us," Yuki said, and it wasn't a plea. It was a fact he'd already decided.</p>
+<p style="margin-top:12px">They moved you to the penthouse — Floor 12. The city stretched endlessly below, beautiful and unreachable. They took turns staying with you. They brought you things you loved. They were tender, devoted, and completely, irreversibly obsessed.</p>
+<p style="margin-top:12px">You stopped trying to count the days. The city lights were always there when you wanted them. So were they. Always — one of them, all of them. Every night a different warmth, every morning a different pair of eyes watching you wake up.</p>
+<p style="margin-top:12px">You told yourself it was terrible. But somewhere in the tangle of five people who would burn the world to keep you safe — you stopped entirely convincing yourself.</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 The nights in the Penthouse were… thorough. Each of them had their way of reminding you that you were theirs. Yuki with whispered possessive promises. Ren with precise, devastating attention. Dominique loud and shameless and somehow exactly right. Ash silent and overwhelming. Kai so unbearably gentle it broke you open every single time. You were never left wanting. You were never left alone. You were never leaving.</p>`;
+  }else if(which==='good'){
+    et.textContent='✨ True Ending — All Five';
+    et.style.color='var(--accent-pink)';
+    esub.textContent='You chose all of them. Somehow, impossibly — they chose each other too.';
+    ec.innerHTML=`<p>It started as a conversation — the six of you on the rooftop, city lights below, the comfortable silence that had built over months of shared meals and late-night texts and small disasters. Kai had made tea. Ren had pretended not to want any. Ash had taken his without being asked. Dominique had spilled his.</p>
+<p style="margin-top:12px">"This is weird," Dominique said finally. "That I'm okay with... all of them also—"</p>
+<p style="margin-top:12px">"Don't finish that sentence," Ren said. And then: "...I know."</p>
+<p style="margin-top:12px">Yuki had simply looked at you. "I always knew I couldn't have you to myself. I just needed to know you weren't leaving."</p>
+<p style="margin-top:12px">Ash: "Same."</p>
+<p style="margin-top:12px">Kai had laughed — soft and broken and relieved — and pulled you into a hug that somehow fit all six of you eventually.</p>
+<p style="margin-top:12px">It was unconventional. It was chaotic. It was warm in a way you'd stopped believing you deserved. Five different kinds of love, each of them complete, none of them requiring you to be less.</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 The Penthouse became yours in every sense. Some nights it was just one of them — Ren appearing at your door at midnight with something he'd never say in daylight, Ash's rare and devastating directness, Dominique's relentless enthusiastic devotion, Kai's tender sweetness, Yuki's consuming and finally-safe intensity. Some nights it was more than one. Those nights were their own language — a warmth so thick you thought you'd dissolve in it. You didn't. You stayed. You were exactly where you were supposed to be.</p>`;
+  }else if(which.startsWith('normal_')){
+    showNormalEnding(which.replace('normal_',''));
+    return;
+  }else{
+    showNormalEnding(Object.entries(G.love).sort((a,b)=>b[1]-a[1])[0][0]);
+    return;
+  }
+  es.classList.add('open');
+}
+
+function showNormalEnding(charId){
+  const p=G.player;
+  const ch=CHARS[charId];
+  const es=document.getElementById('end-screen');
+  const et=document.getElementById('end-title');
+  const esub=document.getElementById('end-sub');
+  const ec=document.getElementById('end-content');
+
+  const endings={
+    Kai:{
+      title:'🌸 Kai\'s Ending — Every Morning',
+      sub:'He always asked if you\'d eaten. One day you realized you were asking about him too.',
+      body:`<p>Kai made breakfast. He always did — it had started as casual, evolved into habit, settled into something neither of you named for a long time because naming it might break it. The morning light made his hair look like it had been painted. You watched him from the doorway and felt something enormous and quiet settle in your chest.</p>
+<p style="margin-top:12px">"You're staring," he said without turning around.</p>
+<p style="margin-top:12px">"I know."</p>
+<p style="margin-top:12px">He turned then. Whatever he saw on your face made him set down the spatula and cross the kitchen in three steps. His hands were warm when they cupped your face. He'd wanted to do this for so long he'd started memorizing your face in preparation.</p>
+<p style="margin-top:12px">"I'm kind of embarrassingly in love with you," he said. "Like — embarrassingly."</p>
+<p style="margin-top:12px">"Good," you said. "Same."</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 The breakfast got cold. Kai apologized for it, flushed, twice. You told him it was worth it. He tucked his face against your neck and made a small sound you decided to spend your life collecting. He was endlessly attentive — paying attention to every detail of what you loved, what made you gasp, what made you melt — and somehow, unbearably, that made it even harder to breathe. You ate reheated eggs at noon, tangled together on his couch. He said "I love you" six more times. You stopped counting after three.</p>`
+    },
+    Ren:{
+      title:'❄️ Ren\'s Ending — Beneath the Ice',
+      sub:'He told you he didn\'t need anyone. You were the exception he never planned for.',
+      body:`<p>Ren didn't say "I love you" first. He said it by learning your coffee order and having it there before you asked. By reading your drafts at 1 AM without being asked. By standing in front of you when someone looked at you too long and saying nothing, needing nothing, just being there like a wall of controlled quiet.</p>
+<p style="margin-top:12px">The night it broke open, it was raining. He stood in your doorway with water in his hair and said, without preamble: "I have been trying not to want this. I'm very good at controlling myself. You are the single thing I cannot control."</p>
+<p style="margin-top:12px">You stepped aside to let him in. He came. For the first time, Ren Ashford let someone else take the lead.</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 He was devastating when he let himself be. Precise and intense and completely, finally unguarded — the ice cracked all at once. He kissed like he argued, like he studied, like he breathed — with total commitment and zero wasted motion. Afterward he didn't leave. He stayed with one arm around you and said, very quietly, "I'm not good at this." You told him he was. He didn't argue. That was how you knew he believed you.</p>`
+    },
+    Yuki:{
+      title:'🌙 Yuki\'s Ending — Safe Obsession',
+      sub:'His love was consuming. You learned the difference between a cage and a home.',
+      body:`<p>Yuki had known for a long time. He told you this — on the rooftop, in the dark, his voice as steady as someone who'd rehearsed this and every possible version of your response. "I know what I am," he said. "I know how it looks. I need you to know that what I feel is real, even if the way I feel it is..."</p>
+<p style="margin-top:12px">"Intense?" you offered.</p>
+<p style="margin-top:12px">"Yes." He looked at you. "I would never trap you. But I need you to understand that you have always been — the only thing that makes me feel like I'm not watching the world through glass."</p>
+<p style="margin-top:12px">You reached out and took his hand. His whole body stilled like you'd touched something rare.</p>
+<p style="margin-top:12px">"Then stop watching," you said. "Just be here."</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 He was trembling when you kissed him — barely, controlled, but there. Yuki's devotion in private was extraordinary. He paid attention in a way that was almost too much to handle — like every breath you took was something he'd been memorizing. Afterward he held on like you might disappear. "Don't go," he said. "Just — stay. Please." You stayed. And every time after that, he asked less desperately. He was learning to trust that you'd come back. And you always did.</p>`
+    },
+    Dominique:{
+      title:'🔥 Dominique\'s Ending — No More Jokes',
+      sub:'He finally ran out of deflections. What was left was the realest thing you\'d ever seen.',
+      body:`<p>Dominique showed up at your door at 11 PM with a plant. A succulent. A very small one. He held it out and said: "I Googled 'what to bring when you love someone but you're terrified of being serious' and somehow a plant came up and now I'm here."</p>
+<p style="margin-top:12px">You stared at him. He stared back. He was — for the first time you could remember — not performing anything.</p>
+<p style="margin-top:12px">"I'm in love with you," he said. "I know I've said like fifty things that could've sounded like this. But I mean — I am <i>actually in love</i> with you. I think about you all the time. It's annoying. I hate it. Please date me."</p>
+<p style="margin-top:12px">You took the plant. Then you grabbed his collar and kissed him before he could ruin it with another joke.</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 He laughed against your mouth — genuine, surprised, delighted — and then stopped laughing very quickly when you made clear you were serious. Dominique was exactly as enthusiastic in private as he was everywhere else, and somehow also completely tuned to you, adjusting and responding and grinning like every moment was a gift he couldn't believe he'd been given. He told you afterward that it was better than he'd imagined. "And I have a very good imagination," he clarified. You threw a pillow at him. He caught it and kept grinning. You loved him so much it was ridiculous.</p>`
+    },
+    Ash:{
+      title:'🖤 Ash\'s Ending — Seen',
+      sub:'He knew everything about you before you spoke. You learned the weight of being truly seen.',
+      body:`<p>The rooftop. Midnight. He had been coming here for months before he ever told you. You found out because you went up one night and he was already there, sitting at the edge with the city below him, and he looked at you over his shoulder without surprise.</p>
+<p style="margin-top:12px">"You knew I'd come," you said.</p>
+<p style="margin-top:12px">"You couldn't sleep. You always come up when you can't sleep." He moved over. You sat down next to him. The city spread out beneath you like a living thing.</p>
+<p style="margin-top:12px">"That's unsettling," you said.</p>
+<p style="margin-top:12px">"I know. I'm sorry." He looked at you. "I see you. I've always seen you. It started as information. It became — something else."</p>
+<p style="margin-top:12px">"What else?"</p>
+<p style="margin-top:12px">He answered by taking your hand. That was the whole sentence.</p>
+<p style="margin-top:14px;font-style:italic;color:var(--text-muted)">🔞 Ash was slow and certain and overwhelming in the way that only very quiet things are — like a tide. He remembered everything you'd ever mentioned wanting. He applied it with the same precision he applied to everything else. Afterward he was still, warm, his hand on your back, and he said: "You're the only thing I chose." It was the most words he'd ever given you at once. You understood that was the whole ocean.</p>`
+    }
+  };
+
+  const e=endings[charId]||{title:'Normal Ending',sub:'',body:''};
+  et.textContent=e.title;et.style.color=ch?.color||'var(--accent-pink)';
+  esub.textContent=e.sub;ec.innerHTML=e.body;
+  es.classList.add('open');
+}
+
+function replayGame(){
+  G.love={Kai:0,Ren:0,Yuki:0,Dominique:0,Ash:0};
+  G.dark={Kai:0,Ren:0,Yuki:0,Dominique:0,Ash:0};
+  G.flags={};G.chapter='Prologue';G.sceneDepth=0;
+  document.getElementById('end-screen').classList.remove('open');
+  document.getElementById('messages').innerHTML='';
+  document.getElementById('choices-area').classList.add('hidden');
+  document.getElementById('choices-list').innerHTML='';
+  updateMeters();
+  buildSidebar();
+  setTimeout(()=>runScene(PROLOGUE),400);
+}
+
+// ════════════════════════════════════════════
+//  SCENE DATA
+// ════════════════════════════════════════════
+// Helper: gender-conditional beat
+const gb=(f,m,nb)=>p=>{
+  if(p.gender==='female')return f;
+  if(p.gender==='male')return m;
+  return nb||f;
+};
+
+// ─── PROLOGUE ───────────────────────────────
+const PROLOGUE=[
+  {type:'chapter',text:'✦ Prologue: Wrong Number ✦'},
+  {type:'narration',text:'Your phone buzzes just as you settle into your new apartment.'},
+  {type:'narration',text:'A group chat notification — from a name you don\'t recognize: "The Penthouse 🏙️"'},
+  {type:'message',speaker:'Kai',text:'Okay, the last moving box is unpacked. How is everyone tonight? 🏠'},
+  {type:'message',speaker:'Dominique',text:'Same as always. Devastatingly handsome and profoundly bored 🔥'},
+  {type:'message',speaker:'Ren',text:'We\'re at capacity for dramatic entrances, Cruz.'},
+  {type:'message',speaker:'Dominique',text:'Oh hush, nobody asked you, Ren ✨'},
+  {type:'message',speaker:'Ren',text:'Good.'},
+  {type:'message',speaker:'Yuki',text:'There\'s a new member in the chat. 🌙 Who added them?'},
+  {type:'message',speaker:'Kai',text:'Wait — that wasn\'t me? Oh no. Did I add the wrong contact when I rebuilt the group?? 😱'},
+  {type:'message',speaker:'Ash',text:'They\'ve been reading for 4 minutes.'},
+  {type:'message',speaker:'Dominique',text:'THEY\'RE LURKING. Hey stranger!! 👀👀'},
+  {type:'narration',text:'Five pairs of eyes — five very different vibes — turn your way.'},
+  {type:'choice',options:[
+    {text:'Haha, I think I got added by accident? I\'m {name}.',effects:{Kai:5,Ren:3,Yuki:4,Dominique:3,Ash:2},response:[
+      {type:'message',speaker:'Kai',text:'Oh no, I\'m so embarrassed! I\'m Kai 😂 Do you actually live in this building?'},
+      {type:'message',speaker:'Dominique',text:'Wait it WORKED OUT though?? Hi {name}, I\'m Dominique 🔥 I\'m the fun one, just so you know~'},
+      {type:'message',speaker:'Ren',text:'Ren. Don\'t let his opening line lower your expectations.'},
+      {type:'message',speaker:'Dominique',text:'REN ASHFORD.'},
+      {type:'message',speaker:'Yuki',text:'{name}... That\'s a lovely name. 🌙 I\'m Yuki. I hope you stay.'},
+      {type:'message',speaker:'Ash',text:'Ash.'},
+      {type:'narration',text:'One word. Ash Wolfe, apparently.'},
+    ]},
+    {text:'...I\'ve been in this chat 10 minutes and nobody noticed until now?',effects:{Dominique:6,Ash:5,Ren:2,Kai:2,Yuki:3},response:[
+      {type:'message',speaker:'Dominique',text:'I LIKE THIS ONE. The audacity 😂💀 I\'m Dominique.'},
+      {type:'message',speaker:'Ash',text:'I noticed at two minutes. I was waiting to see what you\'d do.'},
+      {type:'message',speaker:'Kai',text:'I\'m so sorry!! I\'m Kai, this is entirely my fault 😭'},
+      {type:'message',speaker:'Ren',text:'Ren.'},
+      {type:'message',speaker:'Yuki',text:'You were watching us. I like that. 🌙 I\'m Yuki.'},
+    ]},
+    {text:'...Is this some kind of group prank?',effects:{Kai:3,Yuki:5,Ren:4,Dominique:2,Ash:2},response:[
+      {type:'message',speaker:'Yuki',text:'No prank. We\'re very real. 🌙 I\'m Yuki.'},
+      {type:'message',speaker:'Kai',text:'I\'m Kai and I accidentally added you — I\'m so sorry! Are you new to the building?'},
+      {type:'message',speaker:'Dominique',text:'I\'m Dominique, outrageously attractive, and this is destiny not a prank 🙏'},
+      {type:'message',speaker:'Ren',text:'Ren. Ignore him.'},
+      {type:'message',speaker:'Ash',text:'Ash. Floor 12.'},
+    ]},
+  ]},
+  {type:'message',speaker:'Kai',text:'Do you actually live here, {name}? We could come help you settle in! ☕'},
+  {type:'message',speaker:'Dominique',text:'Can confirm I am EXCELLENT at carrying boxes 💪😏'},
+  {type:'message',speaker:'Ren',text:'You wouldn\'t last one trip.'},
+  {type:'choice',options:[
+    {text:'Yeah! I\'m in 11C. I could actually use help.',effects:{Kai:6,Dominique:5,Yuki:3,Ren:2},response:[
+      {type:'message',speaker:'Kai',text:'Yay! We\'re literally one floor up! I\'ll bring coffee ☕'},
+      {type:'message',speaker:'Dominique',text:'I\'ll bring myself~ 😘'},
+      {type:'message',speaker:'Yuki',text:'I\'ll come too. I want to help. 🌙'},
+      {type:'message',speaker:'Ren',text:'...Fine. I\'ll supervise. Since Cruz will drop something.'},
+      {type:'message',speaker:'Dominique',text:'YOU SAID YES THAT IS SO SWEET REN—'},
+      {type:'message',speaker:'Ren',text:'I\'m not coming.'},
+      {type:'message',speaker:'Ash',text:'I\'ll check in later.'},
+    ]},
+    {text:'I\'m okay, but some company would be nice? It\'s quieter than I expected.',effects:{Kai:4,Yuki:7,Ash:5,Ren:3},response:[
+      {type:'message',speaker:'Yuki',text:'Quiet places can be lonely. I understand. I\'ll come by. 🌙'},
+      {type:'message',speaker:'Kai',text:'Already grabbing my keys! 😊'},
+      {type:'message',speaker:'Ash',text:'The rooftop at midnight. Worth seeing the city from up there, if you can\'t sleep.'},
+      {type:'narration',text:'That\'s the most Ash has said all conversation.'},
+      {type:'message',speaker:'Dominique',text:'ASH IS INVITING PEOPLE TO HIS SPOT THIS IS HISTORIC'},
+      {type:'message',speaker:'Ash',text:'Forget I said it.'},
+    ]},
+    {text:'Thanks, but maybe another time. I appreciate it though.',effects:{Ren:6,Kai:2,Ash:4,Yuki:2},response:[
+      {type:'message',speaker:'Ren',text:'Good. Boundaries. Rare thing.'},
+      {type:'message',speaker:'Kai',text:'Of course! No pressure — offer stands 😊'},
+      {type:'message',speaker:'Dominique',text:'I WILL find an excuse to knock on your door eventually 😤'},
+      {type:'message',speaker:'Yuki',text:'You\'ll warm up eventually. People always do. 🌙'},
+    ]},
+  ]},
+  {type:'message',speaker:'Kai',text:'Welcome to the building, {name}! You\'re stuck with us now 😄'},
+  {type:'message',speaker:'Dominique',text:'Best accident ever tbh 😘'},
+  {type:'message',speaker:'Ren',text:'Don\'t let him speak for everyone.'},
+  {type:'message',speaker:'Yuki',text:'I\'m glad you\'re here. I really am. 🌙'},
+  {type:'message',speaker:'Ash',text:'Goodnight.'},
+  {type:'narration',text:'You set your phone down, something warm settling quietly in your chest.'},
+  {type:'branch',scene:null}, // → CH1, set below
+];
+
+// ─── CHAPTER 1 ───────────────────────────────
+const CH1=[
+  {type:'chapter',text:'✦ Chapter 1: Good Morning ✦'},
+  {type:'narration',text:'Morning. Your phone lights up before your alarm.'},
+  {type:'message',speaker:'Kai',text:'Good morning! ☀️ Did you sleep okay? First nights in new places are weird.'},
+  {type:'message',speaker:'Dominique',text:'RISE AND SHINE BEAUTIFUL ✨ (that\'s you {name}, you\'re beautiful)'},
+  {type:'message',speaker:'Ren',text:'It\'s 7 AM, Cruz.'},
+  {type:'message',speaker:'Dominique',text:'Love knows no timezone, Ren 😤'},
+  {type:'message',speaker:'Yuki',text:'Good morning, {name}. I was thinking about you. 🌙 Did you eat?'},
+  {type:'choice',options:[
+    {text:'Morning! Slept great. Already made coffee ☕',effects:{Kai:4,Dominique:3,Yuki:2},response:[
+      {type:'message',speaker:'Kai',text:'Coffee person! I knew I liked you 😄'},
+      {type:'message',speaker:'Dominique',text:'We should have coffee together sometime~ The view from our floor in the morning is 🤌'},
+      {type:'message',speaker:'Yuki',text:'I could bring you breakfast. I make good pastries. You\'d let me come over, right? 🌙'},
+      {type:'narration',text:'The question hangs a beat too long.'},
+    ]},
+    {text:'Barely slept. City is SO loud. How do you survive?',effects:{Ash:5,Ren:4,Kai:3},response:[
+      {type:'message',speaker:'Ash',text:'Noise-cancelling. White noise app. You adjust around week three.'},
+      {type:'message',speaker:'Ren',text:'Earplugs. Or sleeping with intent.'},
+      {type:'message',speaker:'Dominique',text:'I could come keep you company till you fall asleep~ 😁'},
+      {type:'message',speaker:'Ren',text:'You will not.'},
+    ]},
+    {text:'...I may have stayed up reading the chat archive until 3 AM.',effects:{Dominique:7,Ash:6,Ren:3,Yuki:4},response:[
+      {type:'message',speaker:'Dominique',text:'WAIT YOU SCROLLED THE WHOLE ARCHIVE 😈 What did you find??'},
+      {type:'message',speaker:'Ash',text:'How far back did you go.'},
+      {type:'narration',text:'Not a question. An assessment.'},
+      {type:'message',speaker:'Ren',text:'Delete the history, Kai.'},
+      {type:'message',speaker:'Kai',text:'WHY IS THERE EMBARRASSING STUFF IN THE HISTORY REN'},
+      {type:'message',speaker:'Ren',text:'Not from me.'},
+      {type:'message',speaker:'Yuki',text:'I hope you found something interesting. I post late at night. Often. 🌙'},
+    ]},
+  ]},
+  {type:'message',speaker:'Kai',text:'Hey {name} — do you go to Westfield University? We probably have overlapping everything.'},
+  {type:'choice',options:[
+    {text:'Yes! Second year. What\'s everyone studying?',effects:{Kai:5,Ren:2,Dominique:3,Ash:3},response:[
+      {type:'message',speaker:'Kai',text:'Architecture, third year! Ren\'s pre-law, Dominique does communications, Ash is CS, Yuki\'s psychology 😊'},
+      {type:'message',speaker:'Dominique',text:'I prefer "professionally charming people" but sure, communications 😎'},
+      {type:'message',speaker:'Ren',text:'Pre-law. Which means I don\'t have time for this.'},
+      {type:'message',speaker:'Ash',text:'Computer science. Information systems.'},
+      {type:'message',speaker:'Yuki',text:'Psychology. 🌙 I find people fascinating. Especially new ones.'},
+    ]},
+    {text:'No, I work from home — freelance designer.',effects:{Ash:5,Dominique:4,Yuki:3,Kai:3},response:[
+      {type:'message',speaker:'Ash',text:'What kind of design.'},
+      {type:'message',speaker:'Dominique',text:'FLEXIBLE SCHEDULE. {name} you are a DANGER to this household 👀'},
+      {type:'message',speaker:'Kai',text:'That\'s so cool! What\'s it like not having lecture schedules??'},
+      {type:'message',speaker:'Yuki',text:'You work from home. So you\'re here. During the day. 🌙 Good to know.'},
+      {type:'narration',text:'Yuki adds a single tiny heart immediately after. You\'re not sure what to do with that.'},
+    ]},
+  ]},
+  gb(
+    {type:'message',speaker:'Dominique',text:'Okay I HAVE to know — what does {name} even look like? All I have is the voice in my head reading your texts and it is unfairly cute 😭'},
+    {type:'message',speaker:'Dominique',text:'Okay real question — {name}, do you lift? Because Ash is inexplicably built, Ren is ripped for someone who "only studies," and I need to know where I stand in the neighborhood rankings 😭'},
+  ),
+  {type:'choice',options:[
+    {text:p=>p.gender==='female'?'Ha — I\'m {height}, {weight}. Pretty average I think.':'I\'d say {bodytype}, {height}. Nothing dramatic.',effects:{Dominique:6,Yuki:4,Ren:2},response:[
+      gb(
+        {type:'message',speaker:'Dominique',text:'{height} at {weight}?? {name} that is a RECIPE and I need everyone in this chat to compose themselves 😩'},
+        {type:'message',speaker:'Dominique',text:'{bodytype} at {height}?? Okay we\'re going to the gym together, I need a reference point 😂'},
+      ),
+      gb(
+        {type:'message',speaker:'Dominique',text:'Also wait — {cup} cup?? I need to sit down—'},
+        {type:'message',speaker:'Dominique',text:'And {dicksize}?? SIR. I need a MOMENT.'},
+      ),
+      {type:'message',speaker:'Ren',text:'Cruz.'},
+      {type:'message',speaker:'Dominique',text:'I\'m CALM.'},
+      {type:'message',speaker:'Yuki',text:'I already had a feeling you were lovely, {name}. 🌙'},
+      {type:'message',speaker:'Kai',text:'Dominique please be normal for thirty consecutive seconds'},
+    ]},
+    {text:'I\'m not describing myself in a group chat 😭 You\'ll see me eventually.',effects:{Ren:7,Ash:6,Kai:3,Dominique:2},response:[
+      {type:'message',speaker:'Ren',text:'Good answer.'},
+      {type:'message',speaker:'Ash',text:'Sensible.'},
+      {type:'message',speaker:'Dominique',text:'YOU\'RE NO FUN {name} 😭 (also honestly incredible for it)'},
+      {type:'message',speaker:'Yuki',text:'That\'s okay. I\'ll be patient. 🌙'},
+    ]},
+  ]},
+  {type:'message',speaker:'Ash',text:'Heads up. Elevator\'s out on 10-11 today. Maintenance through 6 PM.'},
+  {type:'message',speaker:'Kai',text:'Oh no!! {name} you\'re on 11 — stairs all day 😭'},
+  {type:'message',speaker:'Dominique',text:'I volunteer as escort service 😇'},
+  {type:'message',speaker:'Ren',text:'You live on the same floor. That\'s just walking.'},
+  {type:'message',speaker:'Dominique',text:'It\'s called ROMANCE, Ren.'},
+  {type:'choice',options:[
+    {text:'Ugh, stairs it is. Thanks Ash!',effects:{Ash:7,Kai:3,Ren:2},response:[
+      {type:'message',speaker:'Ash',text:'I\'ll pass things along when they come up.'},
+      {type:'narration',text:'Brief. But somehow it feels like a quiet promise.'},
+      {type:'message',speaker:'Kai',text:'Ash is our unofficial building news anchor 😄 He always knows first.'},
+      {type:'message',speaker:'Ash',text:'I pay attention.'},
+      {type:'message',speaker:'Yuki',text:'So do I. 🌙'},
+    ]},
+    {text:'Honestly I could use the exercise. Maybe I\'ll run them.',effects:{Dominique:5,Kai:4,Ash:3},response:[
+      {type:'message',speaker:'Dominique',text:'RACE ME. RIGHT NOW. Loser buys coffee for a week 😤'},
+      {type:'message',speaker:'Kai',text:'Dominique NO the stairs are NARROW—'},
+      {type:'message',speaker:'Ren',text:'I want video documentation.'},
+      {type:'message',speaker:'Ash',text:'The stairwell camera has it covered.'},
+      {type:'message',speaker:'Dominique',text:'ASH DELETE THAT FOOTAGE.'},
+      {type:'message',speaker:'Ash',text:'...I\'ll consider it.'},
+    ]},
+    {text:'Dominique, if you\'re offering to help with groceries — I\'m not saying no 😅',effects:{Dominique:8,Yuki:-2,Ren:1,Kai:2,dark_Yuki:3},response:[
+      {type:'message',speaker:'Dominique',text:'SCREAMING CRYING THRIVING. I\'ll be there in ten minutes {name} 😭💕'},
+      {type:'message',speaker:'Yuki',text:'...I could have helped too. 🌙 You could have asked me.'},
+      {type:'narration',text:'Something in Yuki\'s message lands heavier than three words should.'},
+      {type:'message',speaker:'Kai',text:'Yuki you can still come! The more the merrier 😊'},
+      {type:'message',speaker:'Yuki',text:'No. It\'s fine.'},
+    ]},
+  ]},
+  {type:'message',speaker:'Ren',text:'{name}. You mentioned being a designer.'},
+  {type:'narration',text:'No question mark. Ren states things.'},
+  {type:'choice',options:[
+    {text:'Yeah — graphic and UX mostly. Why?',effects:{Ren:6,Ash:4},response:[
+      {type:'message',speaker:'Ren',text:'I need a poster for moot court by Friday. The person the committee hired is useless. I\'ll pay your standard rate.'},
+      {type:'message',speaker:'Kai',text:'Aww Ren that\'s basically the nicest way you\'ve ever asked anyone anything 🥺'},
+      {type:'message',speaker:'Dominique',text:'{name} he just asked you on a PROFESSIONAL DATE ooooh 👀'},
+      {type:'message',speaker:'Ren',text:'I will rescind the offer.'},
+    ]},
+    {text:'I\'m selective about clients. What\'s the project?',effects:{Ren:8,Ash:5,Dominique:3},response:[
+      {type:'message',speaker:'Ren',text:'...Selective. I respect that.'},
+      {type:'narration',text:'He paused before typing that. Actually paused.'},
+      {type:'message',speaker:'Dominique',text:'REN PAUSED BEFORE TYPING. HE\'S FLUSTERED.'},
+      {type:'message',speaker:'Ash',text:'He was flustered.'},
+      {type:'message',speaker:'Ren',text:'ASHFORD. — 12x18, legal aesthetics, navy/white, Friday 9 AM.'},
+    ]},
+  ]},
+  {type:'message',speaker:'Yuki',text:'You\'re already becoming part of everyone\'s lives, {name}. 🌙'},
+  {type:'message',speaker:'Yuki',text:'I wonder if you realize how much space you\'ve already taken up.'},
+  {type:'message',speaker:'Ash',text:'Sleep well, {name}.'},
+  {type:'message',speaker:'Dominique',text:'Dream of me 😘'},
+  {type:'message',speaker:'Ren',text:'Do not.'},
+  {type:'narration',text:'You set your phone face-down. But you\'re smiling.'},
+  {type:'branch',scene:null}, // → CH2
+];
+PROLOGUE[PROLOGUE.length-1].scene=CH1;
+
+// ─── CHAPTER 2 ───────────────────────────────
+const CH2=[
+  {type:'chapter',text:'✦ Chapter 2: Cracks ✦'},
+  {type:'narration',text:'Two days pass. The chat is a constant companion — Kai\'s morning check-ins, Yuki\'s late-night observations, Dominique\'s relentless commentary. You\'re starting to feel the shape of each of them.'},
+  {type:'narration',text:'Then at 11:52 PM, Yuki sends something that changes the texture of the night.'},
+  {type:'message',speaker:'Yuki',text:'{name}. Are you awake? 🌙'},
+  {type:'choice',options:[
+    {text:'Yeah, just reading. What\'s up?',effects:{Yuki:7},response:[
+      {type:'message',speaker:'Yuki',text:'I saw your apartment light on from the street below. I was walking home late.'},
+      {type:'message',speaker:'Yuki',text:'I like knowing when you\'re awake. Is that strange to say? 🌙'},
+      {type:'narration',text:'He was looking at your window. From the street.'},
+      {type:'narration',text:'Your heartbeat does something complicated.'},
+    ]},
+    {text:'Barely. Was just about to sleep.',effects:{Yuki:4,Ren:2},response:[
+      {type:'message',speaker:'Yuki',text:'I\'m sorry for keeping you up. 🌙 Rest well, {name}.'},
+      {type:'message',speaker:'Yuki',text:'...I\'ll be quiet now.'},
+      {type:'narration',text:'Twenty minutes later, Yuki\'s status flickers online. Then off. Then on again.'},
+      {type:'narration',text:'He didn\'t sleep either.'},
+    ]},
+  ]},
+  {type:'message',speaker:'Dominique',text:'ATTENTION: I have secured a reservation at Sora Rooftop Bar this Friday. Five seats — six if {name} comes. PLEASE say yes {name} 🥺'},
+  {type:'message',speaker:'Kai',text:'Oh that\'s the fancy place on 34th! I\'ve always wanted to go 😍'},
+  {type:'message',speaker:'Ren',text:'I have a review Friday evening.'},
+  {type:'message',speaker:'Dominique',text:'Ren I will physically carry you there.'},
+  {type:'message',speaker:'Ash',text:'I\'ll come.'},
+  {type:'message',speaker:'Dominique',text:'ASH SAID YES BEFORE REN. BEST DAY OF MY LIFE.'},
+  {type:'message',speaker:'Yuki',text:'If {name} goes, I go. 🌙'},
+  {type:'choice',options:[
+    {text:'I\'m in! First real night out since moving here 🥂',effects:{Dominique:6,Kai:5,Yuki:4,Ash:3,Ren:2},response:[
+      {type:'message',speaker:'Dominique',text:'YESSSS. Friday 8 PM, dress to make Ren feel underdressed 😈'},
+      {type:'message',speaker:'Ren',text:'I always dress appropriately.'},
+      {type:'message',speaker:'Kai',text:'I\'m so excited, this is going to be amazing!!'},
+      {type:'message',speaker:'Yuki',text:'I\'ll look forward to seeing you properly for the first time. 🌙'},
+      {type:'narration',text:'"Properly." Like he\'s been watching improperly until now.'},
+    ]},
+    {text:'What\'s the dress code? Need to know what I\'m getting into.',effects:{Ash:5,Ren:5,Kai:3,Dominique:4},response:[
+      {type:'message',speaker:'Ash',text:'Smart casual or cocktail. Rooftop. Cooler after 9.'},
+      gb(
+        {type:'message',speaker:'Dominique',text:'At {height}, {weight}? {name} the bar\'s going to stop when you walk in 😩'},
+        {type:'message',speaker:'Dominique',text:'{bodytype} build in a cocktail look? {name} the bouncer\'s going to think you own the place 😤'},
+      ),
+      {type:'message',speaker:'Ren',text:'Cruz, breathe.'},
+      {type:'message',speaker:'Kai',text:'I also need to know what you\'re wearing so we can accidentally coordinate 🙈'},
+    ]},
+    {text:'I don\'t know... group things when you\'re new can be a lot.',effects:{Ren:6,Ash:5,Yuki:3,Kai:3},response:[
+      {type:'message',speaker:'Ren',text:'Then don\'t come. No obligation.'},
+      {type:'message',speaker:'Kai',text:'What Ren means is — no pressure. But we\'d love to have you. 💙'},
+      {type:'message',speaker:'Ash',text:'I usually step out early anyway. We can go together if it\'s too much.'},
+      {type:'narration',text:'Ash offering an exit strategy feels like the most unexpectedly gentle thing anyone\'s said.'},
+      {type:'message',speaker:'Yuki',text:'I\'ll stay near you. So it doesn\'t feel like too many strangers. 🌙'},
+    ]},
+  ]},
+  {type:'narration',text:'The week hums with new anticipation. Friday isn\'t just dinner — it\'s the first time you\'ll all be in the same room.'},
+  {type:'message',speaker:'Ash',text:'Hey. One thing before Friday.'},
+  {type:'choice',options:[
+    {text:'Yeah? What\'s up, Ash?',effects:{Ash:8},response:[
+      {type:'message',speaker:'Ash',text:'The others. They like you. Maybe more than they\'ve processed.'},
+      {type:'message',speaker:'Ash',text:'Be careful with what you choose. What you give and what you don\'t.'},
+      {type:'narration',text:'Like he already knows something is beginning.'},
+    ]},
+    {text:'Ash texting me separately? What\'s the occasion.',effects:{Ash:6,Dominique:2},response:[
+      {type:'message',speaker:'Ash',text:'The group chat isn\'t the right place for everything.'},
+      {type:'message',speaker:'Ash',text:'I watch. And they\'re already moving around you differently. Just — choose what you actually want. Not just what happens to you.'},
+      {type:'narration',text:'It\'s the most honest thing anyone\'s said to you since you moved in.'},
+    ]},
+  ]},
+  {type:'narration',text:'Friday is coming.'},
+  {type:'branch',scene:null}, // → CH3
+];
+CH1[CH1.length-1].scene=CH2;
+
+// ─── CHAPTER 3: SORA ROOFTOP ─────────────────
+const CH3=[
+  {type:'chapter',text:'✦ Chapter 3: Sora Rooftop ✦'},
+  {type:'narration',text:'Friday. 8 PM. Sora Rooftop — all glass and soft light, the city spread below like scattered diamonds.'},
+  {type:'narration',text:'You step out of the elevator and stop. Because there they are — all five of them — and they look up at exactly the same moment.'},
+  {type:'narration',text:'For two weeks you\'ve known them only as voices on a screen. Now they\'re real, and completely different, and exactly right.'},
+  {type:'message',speaker:'Kai',text:'Oh wow — {name}! Hi!! You look amazing!! 😊✨'},
+  {type:'message',speaker:'Dominique',text:'...Okay. Wow. I was NOT prepared. 🔥'},
+  gb(
+    {type:'message',speaker:'Dominique',text:'I knew you\'d be — but {height}?? That {weight}?? The {cup} cup?? {name} you owe me an apology for not warning me 😭'},
+    {type:'message',speaker:'Dominique',text:'That {bodytype} in a jacket?? {name} I owe YOU an apology for every flirty text, I was clearly not calibrated 😭'},
+  ),
+  {type:'message',speaker:'Ren',text:'Cruz.'},
+  {type:'message',speaker:'Dominique',text:'I\'m COMPOSED.'},
+  {type:'message',speaker:'Yuki',text:'...You\'re even more {name} in person. 🌙'},
+  {type:'narration',text:'Whatever that means, it makes your face warm.'},
+  {type:'message',speaker:'Ash',text:'You made it.'},
+  {type:'narration',text:'Two words. But the way he looks at you when he says it — like he was doing math and you solved it — lands harder than a speech.'},
+  {type:'choice',options:[
+    {text:'"You all look... different than I imagined. Better."',effects:{Kai:5,Dominique:5,Ren:4,Yuki:4,Ash:5},response:[
+      {type:'message',speaker:'Kai',text:'I\'m putting that in the Penthouse hall of fame 😭💕'},
+      {type:'message',speaker:'Dominique',text:'BETTER than you imagined?? I need to know what you imagined 👀'},
+      {type:'message',speaker:'Ren',text:'...You\'re unexpectedly direct.'},
+      {type:'message',speaker:'Yuki',text:'I think about what you imagined. 🌙'},
+      {type:'message',speaker:'Ash',text:'Good.'},
+    ]},
+    {text:'"Dominique, I can\'t believe you in person. You\'re worse."',effects:{Dominique:8,Ren:3,Ash:3,Kai:2},response:[
+      {type:'message',speaker:'Dominique',text:'WORSE?? 😭 I am EXACTLY as advertised—'},
+      {type:'message',speaker:'Kai',text:'She/He/They has a point honestly 💀'},
+      {type:'message',speaker:'Ren',text:'Fair assessment.'},
+      {type:'message',speaker:'Dominique',text:'REN YOU\'RE SUPPOSED TO DEFEND ME'},
+      {type:'message',speaker:'Ash',text:'Why would he do that.'},
+      {type:'message',speaker:'Dominique',text:'...I hate this group. (I don\'t. {name} please sit next to me)'},
+    ]},
+    {text:'"Ash — hi. Thank you for the elevator-outage warning earlier."',effects:{Ash:9,Yuki:2,Ren:3},response:[
+      {type:'message',speaker:'Ash',text:'...You remembered that.'},
+      {type:'narration',text:'Something shifts in his expression. Barely. Like a door opening a crack.'},
+      {type:'message',speaker:'Kai',text:'Aww 🥺'},
+      {type:'message',speaker:'Dominique',text:'Ash is getting FLUSTERED y\'all look at his EARS—'},
+      {type:'message',speaker:'Ash',text:'They\'re not.'},
+      {type:'message',speaker:'Dominique',text:'THEY\'RE RED ASH.'},
+    ]},
+  ]},
+  {type:'narration',text:'The night settles into warmth — drinks, easy laughter, the city glittering. You\'re learning how they are in person: Kai laughs with his whole body, Ren smiles once and it\'s devastating, Dominique never shuts up but somehow never overstays a moment, Ash watches everyone quietly, Yuki barely takes his eyes off you.'},
+  {type:'narration',text:'Later, the balcony. The crowd thins. You find yourself alone at the railing with the one your heart has been tilting toward all night.'},
+  {type:'choice',options:[
+    {text:'Stay at the railing alone, watching the city.',effects:{Ash:8,dark_Ash:0},flag:{key:'solo_balcony',value:true},response:[
+      {type:'message',speaker:'Ash',text:'You\'re here.'},
+      {type:'narration',text:'He doesn\'t say it like a greeting. He says it like a fact he\'s been waiting to confirm.'},
+      {type:'message',speaker:'Ash',text:'The city looks different when it\'s someone else seeing it with you.'},
+      {type:'narration',text:'You lean on the railing. He\'s close enough that your shoulders are almost touching. Neither of you moves away.'},
+      {type:'narration',text:'🔞 The air between you changes — charged and quiet and full of everything neither of you says. His hand covers yours on the railing. Very still. Very certain.'},
+    ]},
+    {text:'Find Kai. You want to see his real smile up close.',effects:{Kai:8},flag:{key:'balcony_kai',value:true},response:[
+      {type:'message',speaker:'Kai',text:'Oh! Hey, I was wondering where you went 😊'},
+      {type:'narration',text:'Up close, Kai\'s smile is even warmer than you imagined. It reaches his eyes completely. He looks at you like he\'s grateful you exist.'},
+      {type:'message',speaker:'Kai',text:'Can I say something kind of embarrassing?'},
+      {type:'narration',text:'He doesn\'t wait for permission.'},
+      {type:'message',speaker:'Kai',text:'I\'m really glad I accidentally added you. Like, genuinely. Is that weird to say after two weeks?'},
+    ]},
+    {text:'Let Ren corner you at the bar. You\'re curious what he looks like without armor.',effects:{Ren:9},flag:{key:'balcony_ren',value:true},response:[
+      {type:'message',speaker:'Ren',text:'You\'ve been watching me all night.'},
+      {type:'narration',text:'It\'s not an accusation. It\'s a statement. His glass is at his lips and his eyes are on you and you feel briefly like a courtroom exhibit — examined, categorized, kept.'},
+      {type:'message',speaker:'Ren',text:'I\'ve been watching you too. In case you thought that was one-sided.'},
+      {type:'narration',text:'The ice king said something almost tender. You don\'t know what to do with that. Your heart does, though.'},
+    ]},
+  ]},
+  {type:'narration',text:'The night ends with everyone slightly warmer, slightly closer. Something has shifted.'},
+  {type:'message',speaker:'Yuki',text:'Goodnight, {name}. 🌙 I\'ll be thinking about tonight for a while.'},
+  {type:'message',speaker:'Dominique',text:'Next time, {name} sits next to me. That\'s a decree 😤'},
+  {type:'message',speaker:'Kai',text:'This was SO fun 😊 We have to do it again soon!'},
+  {type:'message',speaker:'Ren',text:'...It was acceptable.'},
+  {type:'message',speaker:'Dominique',text:'REN SAID IT WAS ACCEPTABLE. THAT\'S A FIVE-STAR REVIEW FROM HIM.'},
+  {type:'branch',scene:null}, // → CH4
+];
+CH2[CH2.length-1].scene=CH3;
+
+// ─── CHAPTER 4: MORNING AFTER ────────────────
+const CH4=[
+  {type:'chapter',text:'✦ Chapter 4: The Morning After ✦'},
+  {type:'narration',text:'Saturday. The chat wakes up slowly, everyone still carrying last night.'},
+  {type:'message',speaker:'Kai',text:'Good morning everyone 🌅 I keep thinking about how fun last night was. {name}, are you free today? I\'m making brunch.'},
+  {type:'message',speaker:'Dominique',text:'I\'m coming regardless of whether I was invited'},
+  {type:'message',speaker:'Ren',text:'I have case reading.'},
+  {type:'message',speaker:'Kai',text:'Ren that is the same excuse every Saturday.'},
+  {type:'message',speaker:'Ren',text:'Because I have case reading every Saturday.'},
+  {type:'message',speaker:'Yuki',text:'{name}. Did you sleep well? 🌙'},
+  {type:'narration',text:'There\'s no "good morning" attached. Just your name and the question, like he was lying awake thinking about whether you were sleeping.'},
+  {type:'choice',options:[
+    {text:'Kai that sounds perfect. What time?',effects:{Kai:7,Dominique:3},response:[
+      {type:'message',speaker:'Kai',text:'11 AM! 12F — our floor! Just come knock whenever 🥞☕'},
+      {type:'message',speaker:'Dominique',text:'I\'LL BE THERE. I\'m {name}\'s escort for the elevator situation.'},
+      {type:'message',speaker:'Kai',text:'The elevator is fixed, Dominique.'},
+      {type:'message',speaker:'Dominique',text:'I\'m still escorting.'},
+    ]},
+    {text:'Yuki — I slept fine. Stop worrying? 😄',effects:{Yuki:6,dark_Yuki:2},response:[
+      {type:'message',speaker:'Yuki',text:'I\'m not worrying. I was just... thinking about you. 🌙'},
+      {type:'message',speaker:'Yuki',text:'I do that a lot. I thought you should know.'},
+      {type:'narration',text:'The honesty in that is disarming. You\'re not sure if it\'s sweet or if the back of your neck just prickled.'},
+    ]},
+    {text:'Morning everyone. Last night was honestly kind of perfect.',effects:{Kai:4,Dominique:4,Ren:3,Yuki:3,Ash:5},response:[
+      {type:'message',speaker:'Dominique',text:'KIND OF PERFECT. {name} I need you to know my ego is going to be a problem today 😭'},
+      {type:'message',speaker:'Kai',text:'🥹 Yeah it really was'},
+      {type:'message',speaker:'Ash',text:'Agreed.'},
+      {type:'message',speaker:'Ren',text:'...It was a good evening.'},
+      {type:'message',speaker:'Dominique',text:'THAT\'S TWO NICE THINGS FROM REN IN TWO DAYS. Someone call a doctor.'},
+    ]},
+  ]},
+  {type:'narration',text:'Brunch at Kai\'s is a revelation. His apartment smells like coffee and something baked, and it\'s full of architectural models in various stages of completion. Dominique arrives with flowers he definitely stole from the building lobby. The five of you end up around a table barely big enough, and it feels — easy. Real.'},
+  {type:'message',speaker:'Kai',text:'Okay confession: I\'ve been low-key anxious all week that you\'d decide we were too much and leave the chat. 😅'},
+  {type:'choice',options:[
+    {text:'"Honestly I almost did. But then Ash sent that building update and I got attached."',effects:{Ash:7,Kai:4,Dominique:3},response:[
+      {type:'message',speaker:'Kai',text:'ASH SAVED US ALL WITH AN ELEVATOR NOTICE 😭'},
+      {type:'message',speaker:'Ash',text:'Noted.'},
+      {type:'message',speaker:'Dominique',text:'Ash you beautiful genius 😤'},
+      {type:'message',speaker:'Ash',text:'I just share information.'},
+      {type:'message',speaker:'Yuki',text:'I\'m glad something made you stay. 🌙'},
+    ]},
+    {text:'"Are you kidding? This is the most interesting thing that\'s happened to me in months."',effects:{Kai:6,Dominique:5,Ren:3,Yuki:4,Ash:3},response:[
+      {type:'message',speaker:'Dominique',text:'WE ARE THE MOST INTERESTING THING IN YOUR LIFE. I need this framed.'},
+      {type:'message',speaker:'Kai',text:'That makes me unreasonably happy 🥹'},
+      {type:'message',speaker:'Ren',text:'We\'re not that interesting.'},
+      {type:'message',speaker:'Dominique',text:'SPEAK FOR YOURSELF, REN.'},
+    ]},
+    {text:'"I thought about leaving. Then Yuki sent that heart emoji and I felt guilty."',effects:{Yuki:8,dark_Yuki:4,Dominique:4},response:[
+      {type:'message',speaker:'Yuki',text:'...I sent that on purpose. 🌙'},
+      {type:'narration',text:'Everyone at the table goes very quiet.'},
+      {type:'message',speaker:'Dominique',text:'Yuki. Buddy.'},
+      {type:'message',speaker:'Yuki',text:'It worked, didn\'t it?'},
+      {type:'message',speaker:'Kai',text:'I don\'t know if I should be concerned or impressed 😅'},
+    ]},
+  ]},
+  {type:'narration',text:'After brunch, Ren appears at the door — case reading apparently optional — and takes the last seat without comment. Dominique looks victorious. Kai refills everyone\'s coffee twice. Yuki sits closest to you the entire time. Ash has been in the corner, quiet, but every time you look at him he\'s already looking at you.'},
+  {type:'narration',text:'It\'s 4 PM before anyone notices.'},
+  {type:'branch',scene:null}, // → CH5
+];
+CH3[CH3.length-1].scene=CH4;
+
+// ─── CHAPTER 5: THE BRIEF ────────────────────
+const CH5=[
+  {type:'chapter',text:'✦ Chapter 5: Overtime ✦'},
+  {type:'narration',text:'Wednesday evening. A private message from Ren: "If you\'re still doing the poster — tonight works. My apartment."'},
+  {type:'narration',text:'No please. No question mark. But here you are, knocking on 12E, laptop in hand.'},
+  {type:'message',speaker:'Ren',text:'You\'re on time.'},
+  {type:'narration',text:'He opens the door already turning away, like your arrival is a given. His apartment is exactly what you\'d expect: books stacked with architectural precision, a large desk, everything functional. Beautiful in a way that doesn\'t try.'},
+  {type:'choice',options:[
+    {text:'"Were you expecting me not to be?"',effects:{Ren:6,dark_Ren:1},response:[
+      {type:'message',speaker:'Ren',text:'I have a habit of accounting for people being late. You didn\'t fit the model.'},
+      {type:'narration',text:'That\'s the closest Ren Ashford gets to a compliment. You file it away.'},
+    ]},
+    {text:'"Your apartment is very... you."',effects:{Ren:5,Ash:2},response:[
+      {type:'message',speaker:'Ren',text:'What does that mean.'},
+      {type:'narration',text:'You look at the books organized by publication date, the single succulent on the windowsill, the three different legal pads stacked by size. He follows your gaze.'},
+      {type:'message',speaker:'Ren',text:'...I see.'},
+    ]},
+  ]},
+  {type:'narration',text:'You work. He reviews. He critiques without softening anything, which you find you prefer — you always know exactly where you stand. At some point he makes tea without asking if you want any and puts a cup next to your laptop.'},
+  {type:'narration',text:'It\'s 11 PM when you realize you\'ve been here for three hours.'},
+  {type:'message',speaker:'Ren',text:'The second iteration is better. The typeface hierarchy is still off on the left column.'},
+  {type:'choice',options:[
+    {text:'"Show me. Put your hand on the mouse — actually point to it."',effects:{Ren:9},response:[
+      {type:'narration',text:'He leans over. His hand reaches past yours to the trackpad and something in the air changes pressure — like the room exhaled.'},
+      {type:'narration',text:'He doesn\'t move away immediately after pointing. Neither do you.'},
+      {type:'message',speaker:'Ren',text:'...Here. The leading is inconsistent.'},
+      {type:'narration',text:'His voice is slightly different. Lower. Careful.'},
+      {type:'narration',text:'🔞 "I see it," you said, and you weren\'t entirely talking about the typeface. He straightened up slowly. His jaw was set with the particular tension of someone exercising enormous self-control. "It\'s late," he said finally. "You should go." You went. You were at the elevator before you heard his door close. Later, in your apartment, your phone lit up: "The poster is good. Thank you." And then, after a pause that lasted six whole minutes: "Come back sometime. For a reason that isn\'t the poster."'},
+    ]},
+    {text:'"You know, you\'re easier to be around in person than in the chat."',effects:{Ren:7,dark_Ren:2},response:[
+      {type:'message',speaker:'Ren',text:'In the chat I have less control over how I come across.'},
+      {type:'message',speaker:'Ren',text:'In person I can at least — ensure you read it correctly.'},
+      {type:'narration',text:'"Read it correctly." You look at him. He\'s looking at the screen.'},
+      {type:'narration',text:'But his ears are slightly pink.'},
+    ]},
+    {text:'"You\'ve been really helpful, actually. I expected you to be worse."',effects:{Ren:6,Dominique:2},response:[
+      {type:'message',speaker:'Ren',text:'I hear that a lot.'},
+      {type:'message',speaker:'Ren',text:'I\'m not difficult. I\'m precise. There\'s a difference.'},
+      {type:'narration',text:'You\'re starting to understand the difference.'},
+    ]},
+  ]},
+  {type:'narration',text:'Walking home through the building, one floor down, you pass Ash\'s door on the way to the elevator. The light under it is on.'},
+  {type:'branch',scene:null}, // → CH6
+];
+CH4[CH4.length-1].scene=CH5;
+
+// ─── CHAPTER 6: DOMINIQUE'S SECRET ──────────
+const CH6=[
+  {type:'chapter',text:'✦ Chapter 6: No More Jokes ✦'},
+  {type:'narration',text:'Thursday. Dominique has been quiet. Not Ash-quiet — Dominique-quiet, which means he\'s been responding normally but the comments are blunted, the flirting performative rather than present.'},
+  {type:'narration',text:'You notice. You\'re not sure why it bothers you that you notice.'},
+  {type:'message',speaker:'Dominique',text:'Hey. Can I call you? Not in the chat. Just — you.'},
+  {type:'choice',options:[
+    {text:'"Sure, calling now."',effects:{Dominique:8},response:[
+      {type:'narration',text:'He picks up on the first ring. There\'s a long pause before he says anything.'},
+      {type:'message',speaker:'Dominique',text:'I don\'t actually know how to do this part. Where I say real things.'},
+      {type:'narration',text:'You wait.'},
+      {type:'message',speaker:'Dominique',text:'My family kind of fell apart this week. And I\'ve been — I\'ve been keeping it from the group because everyone has their own stuff and I\'m supposed to be the fun one and—'},
+      {type:'narration',text:'"You don\'t have to be the fun one right now," you said.'},
+      {type:'narration',text:'Another pause. Then his voice, rougher: "...Okay."'},
+    ]},
+    {text:'"I noticed something was off. Are you okay?"',effects:{Dominique:7,Ash:3},response:[
+      {type:'message',speaker:'Dominique',text:'You noticed?'},
+      {type:'message',speaker:'Dominique',text:'...Nobody usually notices.'},
+      {type:'narration',text:'"I notice," you said. Because it was true.'},
+      {type:'message',speaker:'Dominique',text:'I don\'t know what to do with that. Can I come over?'},
+    ]},
+  ]},
+  {type:'narration',text:'He shows up at your door twenty minutes later, no performative energy, hoodie up, looking like someone who\'s been carrying a weight for too long.'},
+  {type:'narration',text:'You let him in. You make bad coffee. He sits on your couch and talks — really talks — for almost two hours. About his parents\' divorce. His sister. The pressure of always being the one who makes things easier.'},
+  {type:'message',speaker:'Dominique',text:'I don\'t know why I told you this. I haven\'t told Kai any of this. I haven\'t told anyone.'},
+  {type:'choice',options:[
+    {text:'"Because I\'m not going to tell you it\'s fine when it isn\'t."',effects:{Dominique:9,Kai:2},response:[
+      {type:'narration',text:'He laughs, quiet and genuine — nothing performed about it.'},
+      {type:'message',speaker:'Dominique',text:'Yeah. Yeah, that\'s it exactly.'},
+      {type:'narration',text:'He leans back on your couch and closes his eyes. After a long beat: "I think I\'m really into you. Like not in the way I\'m into everyone. Differently."'},
+      {type:'narration',text:'🔞 He fell asleep on your couch that night — exhausted, finally unguarded, one hand near yours where it had drifted on the cushion. You watched him sleep for longer than you\'d admit. In the morning he woke up disoriented, saw you, and smiled — slowly, genuinely, without any armor at all. "Hi," he said. "I don\'t do this. Stay places." "I know," you said. He stayed for breakfast anyway.'},
+    ]},
+    {text:'"I think the flirting is a defense mechanism."',effects:{Dominique:8,dark_Dominique:1},response:[
+      {type:'message',speaker:'Dominique',text:'...Psychology major is Yuki, not you.'},
+      {type:'message',speaker:'Dominique',text:'(But yes. Obviously yes.)'},
+      {type:'narration',text:'He looks at the floor. Then at you. Then looks away, jaw tight.'},
+      {type:'message',speaker:'Dominique',text:'I really like you. That\'s also a problem.'},
+    ]},
+  ]},
+  {type:'branch',scene:null}, // → CH7
+];
+CH5[CH5.length-1].scene=CH6;
+
+// ─── CHAPTER 7: ASH AFTER MIDNIGHT ──────────
+const CH7=[
+  {type:'chapter',text:'✦ Chapter 7: Midnight Sky ✦'},
+  {type:'narration',text:'Friday, 11:40 PM. Your phone buzzes.'},
+  {type:'message',speaker:'Ash',text:'Rooftop. If you\'re awake and want to see something.'},
+  {type:'choice',options:[
+    {text:'"On my way."',effects:{Ash:9},response:[
+      {type:'narration',text:'The rooftop is everything he said — the city from above, wind just enough, stars where the light pollution thins. He\'s at the edge with a thermos of something and he hands it over without asking.'},
+      {type:'narration',text:'Coffee. The right kind. Your kind.'},
+      {type:'message',speaker:'Ash',text:'I looked it up. Your coffee order.'},
+      {type:'message',speaker:'Ash',text:'I\'ve been coming here since I was a freshman. This is the first time I\'ve told anyone about it.'},
+      {type:'narration',text:'You sip the coffee and look at the city and don\'t say anything. Neither does he. It\'s the most comfortable silence you\'ve ever been in.'},
+      {type:'narration',text:'🔞 An hour in, his shoulder was touching yours. An hour and twenty minutes in, his hand was on the railing next to yours and not moving away. Two hours in, the city was cold and he was warm and he said, very quietly: "I don\'t bring people here because people ask things of you." A pause. "You don\'t ask things of me. I notice that." You turned to look at him. He was already looking at you. The city lights caught the edge of his jaw and you thought: oh. Oh, this is the one. This is already something.'},
+    ]},
+    {text:'"...It\'s midnight, Ash."',effects:{Ash:5,Dominique:3},response:[
+      {type:'message',speaker:'Ash',text:'I know. I figured you\'d either come or not. No pressure.'},
+      {type:'narration',text:'Something about the simplicity of that — I figured you\'d either come or not — makes you grab your jacket.'},
+      {type:'message',speaker:'Ash',text:'Good. It\'s clearer up here after midnight.'},
+    ]},
+  ]},
+  {type:'narration',text:'The next morning, Kai texts asking where you were last night because your light was off.'},
+  {type:'message',speaker:'Yuki',text:'I noticed too. You weren\'t home. 🌙'},
+  {type:'narration',text:'You don\'t say anything in the chat. But later Ash sends one word: "Tonight again?"'},
+  {type:'narration',text:'You say yes.'},
+  {type:'branch',scene:null}, // → CH8
+];
+CH6[CH6.length-1].scene=CH7;
+
+// ─── CHAPTER 8: KAI'S VULNERABILITY ─────────
+const CH8=[
+  {type:'chapter',text:'✦ Chapter 8: What Kai Carries ✦'},
+  {type:'narration',text:'Saturday afternoon. You run into Kai in the building lobby — not his usual self. Quiet. Tidy in a way that looks like effort.'},
+  {type:'message',speaker:'Kai',text:'Oh — {name}! Hey. I was just, um — do you want to come up for a bit? You don\'t have to, I just—'},
+  {type:'choice',options:[
+    {text:'"Yes. Obviously yes."',effects:{Kai:8},response:[
+      {type:'narration',text:'His whole posture changes — like a string pulled too tight goes loose.'},
+      {type:'message',speaker:'Kai',text:'Thank you. Sorry. I\'m being weird.'},
+      {type:'narration',text:'In his apartment he makes tea and then forgets about it. You pick up the mug and put it in his hands and he looks at you like he didn\'t know he needed someone to do that.'},
+    ]},
+    {text:'"What\'s going on? You look off."',effects:{Kai:7,Ash:2},response:[
+      {type:'message',speaker:'Kai',text:'Am I that obvious?'},
+      {type:'narration',text:'"A little," you said.'},
+      {type:'message',speaker:'Kai',text:'My mom called. It\'s — it\'s not an emergency. I just needed a minute and being alone made it louder.'},
+    ]},
+  ]},
+  {type:'narration',text:'He talks about his family — a sister with a chronic illness, parents who depend on him to be okay so they don\'t have to worry about him too. He\'s the stabilizing force for everyone around him. He doesn\'t know who stabilizes him.'},
+  {type:'message',speaker:'Kai',text:'I never talk about this. I don\'t want to make it everyone\'s problem.'},
+  {type:'choice',options:[
+    {text:'"It\'s not a problem. It\'s just you. You\'re allowed to just be you."',effects:{Kai:10,dark_Kai:0},response:[
+      {type:'narration',text:'Kai stares at his tea. His eyes are bright in a way that suggests a lot of effort.'},
+      {type:'message',speaker:'Kai',text:'...I think I needed someone to say that.'},
+      {type:'narration',text:'You stay for three hours. He shows you all his architecture models. He laughs about things that aren\'t sad. By the time you leave he looks like himself again, but a version of himself that has a little less weight on it.'},
+      {type:'narration',text:'🔞 At the door, he catches your hand. Just for a second. His thumb presses once against your knuckle and he says: "Thank you for staying." The way he looks at you — grateful and open and completely unguarded — makes your chest ache. You think about it the whole elevator ride down. You think about the warmth of his hand. You think: yes. That one. That\'s the one.'},
+    ]},
+    {text:'"You always take care of everyone. When do you get taken care of?"',effects:{Kai:9,dark_Kai:0},response:[
+      {type:'message',speaker:'Kai',text:'I...'},
+      {type:'message',speaker:'Kai',text:'I genuinely don\'t know how to answer that. Nobody\'s asked me that before.'},
+      {type:'narration',text:'The look on his face breaks something small and essential open in your chest.'},
+    ]},
+  ]},
+  {type:'branch',scene:null}, // → CH9
+];
+CH7[CH7.length-1].scene=CH8;
+
+// ─── CHAPTER 9: YUKI UNRAVELING ──────────────
+const CH9=[
+  {type:'chapter',text:'✦ Chapter 9: The Moon Doesn\'t Share ✦'},
+  {type:'narration',text:'It starts normally enough. Sunday morning, you\'re in the kitchen when there\'s a knock.'},
+  {type:'narration',text:'Yuki. Holding a paper bag of pastries. His expression is completely serene.'},
+  {type:'message',speaker:'Yuki',text:'I made these. 🌙 I thought you might want breakfast.'},
+  {type:'choice',options:[
+    {text:'"How did you know I hadn\'t eaten yet?"',effects:{Yuki:4,dark_Yuki:5},response:[
+      {type:'message',speaker:'Yuki',text:'You usually eat around 9:30. It\'s 9:15. I timed it. 🌙'},
+      {type:'narration',text:'He says this without a flicker of self-consciousness. Just a fact. A calculation.'},
+      {type:'narration',text:'He knows your breakfast schedule.'},
+    ]},
+    {text:'"Come in. These smell amazing."',effects:{Yuki:6},response:[
+      {type:'narration',text:'He steps inside and looks around your apartment with the quiet attention of someone confirming something they\'ve been imagining.'},
+      {type:'message',speaker:'Yuki',text:'It\'s like I pictured. From seeing the light in your window. 🌙'},
+    ]},
+  ]},
+  {type:'narration',text:'Over breakfast, Yuki says things that are perfectly kind and perfectly off. He knows which pastry you\'ll pick first. He knows you hate coriander (you mentioned it once, in passing, three weeks ago). He\'s been paying attention in a way that transcends normal.'},
+  {type:'message',speaker:'Yuki',text:'I want to ask you something. You don\'t have to answer.'},
+  {type:'message',speaker:'Yuki',text:'The rooftop night, with Ash — what happened?'},
+  {type:'narration',text:'Ice water down your spine. You didn\'t tell anyone about the rooftop.'},
+  {type:'choice',options:[
+    {text:'"How do you know about that?"',effects:{Yuki:2,dark_Yuki:8},response:[
+      {type:'message',speaker:'Yuki',text:'I saw you leave. I was awake. I waited until you came back. 🌙'},
+      {type:'message',speaker:'Yuki',text:'I always wait until you\'re home safe.'},
+      {type:'narration',text:'There it is. He waits until you\'re home. He watches for you. He knows when you\'re back.'},
+      {type:'narration',text:'Part of you is frightened. Part of you — and this is what frightens you more — is moved.'},
+    ]},
+    {text:'"Yuki. That\'s — that\'s a lot."',effects:{Yuki:3,dark_Yuki:6},response:[
+      {type:'message',speaker:'Yuki',text:'I know. 🌙 I know what I am.'},
+      {type:'message',speaker:'Yuki',text:'I know it\'s a lot. But I also know I would never hurt you. What I feel is real. Even if how I feel it is... intense.'},
+      {type:'narration',text:'His honesty makes it harder somehow. It would be easier if he pretended not to know.'},
+    ]},
+    {text:'"I don\'t belong to anyone, Yuki. Not yet."',effects:{Yuki:1,dark_Yuki:10,Ren:3,Ash:3},response:[
+      {type:'message',speaker:'Yuki',text:'...Not yet. 🌙'},
+      {type:'narration',text:'He repeats it like he\'s tasting it. Like those two words mean everything.'},
+      {type:'message',speaker:'Yuki',text:'I can wait. I\'m very patient.'},
+      {type:'narration',text:'The pastries are excellent. The morning is beautiful. You sit with someone who loves you so much it has weight and edges, and you don\'t know if what you feel is warmth or warning. Maybe both.'},
+    ]},
+  ]},
+  {type:'narration',text:'In the Penthouse chat that afternoon, everything looks normal. Dominique\'s making a noise about movie night. Kai found a new recipe. Ren posted a legal meme without comment. Ash said nothing but reacted to yours.'},
+  {type:'narration',text:'But Yuki\'s message from earlier sits in your private DMs: "I know it\'s too much. But I can\'t make it less. You should probably know that."'},
+  {type:'branch',scene:null}, // → CH10
+];
+CH8[CH8.length-1].scene=CH9;
+
+// ─── CHAPTER 10: THE GROUP FRACTURES ─────────
+const CH10=[
+  {type:'chapter',text:'✦ Chapter 10: Fault Lines ✦'},
+  {type:'narration',text:'Three weeks in. Something has shifted in the Penthouse chat — a current under the easy warmth.'},
+  {type:'narration',text:'They all know. They all know about each other, in the way you know about weather — feeling it in the air without anyone saying it aloud.'},
+  {type:'message',speaker:'Dominique',text:'Okay. We need to have a conversation.'},
+  {type:'message',speaker:'Ren',text:'No.'},
+  {type:'message',speaker:'Dominique',text:'Yes. In person. Tonight. All six of us. The rooftop.'},
+  {type:'message',speaker:'Yuki',text:'{name}, please come. 🌙'},
+  {type:'message',speaker:'Kai',text:'I think Dominique\'s right. Avoiding it is making it worse.'},
+  {type:'message',speaker:'Ash',text:'I\'ll be there.'},
+  {type:'narration',text:'The rooftop at dusk. All five of them. And you.'},
+  {type:'choice',options:[
+    {text:'"I\'ll say it first: I like all of you. Differently. I don\'t know what to do with that."',effects:{Kai:5,Ren:5,Yuki:5,Dominique:5,Ash:5},response:[
+      {type:'message',speaker:'Dominique',text:'...Okay. That\'s — thank you for actually saying it.'},
+      {type:'message',speaker:'Kai',text:'I think we all knew. That doesn\'t make it simple.'},
+      {type:'message',speaker:'Ren',text:'No. It doesn\'t.'},
+      {type:'message',speaker:'Yuki',text:'But you\'re still here. That matters. 🌙'},
+      {type:'message',speaker:'Ash',text:'Whatever you choose — I\'m not going anywhere.'},
+      {type:'narration',text:'Five different kinds of love, all of them looking at you at once. The city below, wide and lit. This is the moment where something becomes real.'},
+    ]},
+    {text:'"I feel like I have to make a decision right now and I\'m not ready."',effects:{Ren:4,Ash:4,Kai:3,dark_Yuki:4,dark_Dominique:2},response:[
+      {type:'message',speaker:'Ren',text:'You don\'t. This isn\'t a trial.'},
+      {type:'message',speaker:'Kai',text:'Nobody\'s putting a timer on you, {name} 😊'},
+      {type:'message',speaker:'Yuki',text:'Take as long as you need. 🌙 I\'ll be here.'},
+      {type:'message',speaker:'Dominique',text:'I just — I needed to stop pretending I don\'t care. Even if nothing changes right now.'},
+      {type:'narration',text:'Five people, five different fears, five different kinds of patience. You breathe.'},
+    ]},
+    {text:'"What if I don\'t choose? What if this just... is what it is?"',effects:{Kai:3,Dominique:3,dark_Yuki:6,dark_Ren:4},flag:{key:'poly_hint',value:true},response:[
+      {type:'message',speaker:'Yuki',text:'Then I stay closest. 🌙'},
+      {type:'message',speaker:'Ren',text:'That\'s not a sustainable position.'},
+      {type:'message',speaker:'Dominique',text:'Is it bad that I kind of — don\'t hate that answer?'},
+      {type:'message',speaker:'Ash',text:'We could try it.'},
+      {type:'message',speaker:'Kai',text:'I just want you to be happy. Whatever that looks like.'},
+      {type:'narration',text:'No resolution. Just five people deciding to stay in the ambiguity and call it home. For now.'},
+    ]},
+  ]},
+  {type:'narration',text:'Nobody has an answer. But the conversation breaks something that was building into pressure, and what\'s left feels — lighter. Possible.'},
+  {type:'message',speaker:'Dominique',text:'Okay. So. Movie night? 😤 I have opinions about what we watch.'},
+  {type:'message',speaker:'Ren',text:'You have poor taste.'},
+  {type:'message',speaker:'Dominique',text:'I HAVE BROAD TASTE.'},
+  {type:'narration',text:'The tension dissolves into bickering. Kai laughs. Ash sits next to you, close. Yuki watches the city. You feel, improbably, okay.'},
+  {type:'branch',scene:null}, // → CH11
+];
+CH9[CH9.length-1].scene=CH10;
+
+// ─── CHAPTER 11: YUKI'S BREAKING POINT ───────
+const CH11=[
+  {type:'chapter',text:'✦ Chapter 11: Deeper Dark ✦'},
+  {type:'narration',text:'Four weeks in. The 黑化 has been building. Quiet things — Yuki\'s increasingly detailed knowledge of your schedule. Ren growing colder when you spend time with others. Dominique\'s jokes getting an edge. Ash appearing in places you didn\'t tell him you\'d be.'},
+  {type:'message',speaker:'Yuki',text:'{name}. I need to show you something. Come to the rooftop tonight. Alone. 🌙'},
+  {type:'message',speaker:'Dominique',text:'Yuki what does that mean "alone"'},
+  {type:'message',speaker:'Yuki',text:'It means without you, Dominique.'},
+  {type:'message',speaker:'Dominique',text:'...RUDE but okay??'},
+  {type:'choice',options:[
+    {text:'"Alright. I\'ll be there at 10."',effects:{Yuki:7,dark_Yuki:4},response:[
+      {type:'narration',text:'The rooftop. Yuki stands at the edge, profile to the city. He turns when you arrive and there\'s something in his face you haven\'t seen before — something cracked open.'},
+      {type:'message',speaker:'Yuki',text:'I need you to know something. And I need you to not be afraid of me when I say it.'},
+      {type:'message',speaker:'Yuki',text:'I would do anything to keep you here. I know that\'s not — I know it\'s not normal. But I wanted you to hear it from me rather than realize it slowly. 🌙'},
+      {type:'narration',text:'He said it plainly. No performance. Just the truth about what he is laid flat between you like a card on a table.'},
+      {type:'narration',text:'"I know," you said.'},
+      {type:'narration',text:'"I know," he repeated, and his whole posture collapsed into something like relief.'},
+    ]},
+    {text:'"I\'m not coming unless you tell me what this is about."',effects:{Yuki:4,dark_Yuki:7,Ash:4},response:[
+      {type:'message',speaker:'Yuki',text:'I\'ve been watching over you. More than you know. More than is probably comfortable. 🌙'},
+      {type:'message',speaker:'Yuki',text:'I needed to tell you that in person. Because if you\'re going to be afraid of me, I want to see your face.'},
+      {type:'narration',text:'The honesty of it hits you sideways.'},
+      {type:'message',speaker:'Yuki',text:'Are you coming?'},
+    ]},
+  ]},
+  {type:'narration',text:'A few days later: something breaks into the open. You come home to find a note under your door, in Ren\'s precise handwriting. "I don\'t write these. Read it anyway."'},
+  {type:'narration',text:'It\'s three paragraphs. It says, in the careful language of someone terrified of being understood, that he\'s been in love with you since the third message you sent. That he doesn\'t know what to do about it. That he\'s asking, badly.'},
+  {type:'choice',options:[
+    {text:'Go knock on his door. Right now.',effects:{Ren:10,dark_Ren:2},response:[
+      {type:'narration',text:'He opens the door in his reading glasses, which he removes immediately. His jaw works through something.'},
+      {type:'message',speaker:'Ren',text:'You read it.'},
+      {type:'narration',text:'"Yes." "All of it?" "All of it." A long pause. He steps aside. You go in. His apartment smells like tea and paper. He doesn\'t say anything else for a long time. Then: "Okay."'},
+      {type:'narration',text:'"Okay," you agreed.'},
+      {type:'narration',text:'🔞 What happened after that was not a first kiss so much as a conclusion — the end of an argument neither of you had spoken aloud. He kissed like he\'d been holding it back for a month, which he had. Methodical and consuming and precise and not at all cold. Afterward he was quiet but he kept one hand on your face like a man making sure of coordinates. "Stay," he said. In four weeks you had never heard Ren Ashford ask for anything. You stayed.'},
+    ]},
+    {text:'Text him: "I read it. Don\'t take it back."',effects:{Ren:8,dark_Ren:3},response:[
+      {type:'narration',text:'Three minutes of no response. Then:'},
+      {type:'message',speaker:'Ren',text:'I wasn\'t planning to.'},
+      {type:'narration',text:'And then:'},
+      {type:'message',speaker:'Ren',text:'Come over. Bring coffee. I\'ll explain better in person.'},
+    ]},
+  ]},
+  {type:'branch',scene:null}, // → CH12
+];
+CH10[CH10.length-1].scene=CH11;
+
+// ─── CHAPTER 12: THE DARK TURN ───────────────
+const CH12=[
+  {type:'chapter',text:'✦ Chapter 12: 黑化 ✦'},
+  {type:'narration',text:'Something is different. The warmth is still there — but underneath it, something else. Each of them is becoming more.'},
+  {type:'message',speaker:'Yuki',text:'{name}, you didn\'t come home until 1 AM last night. 🌙 I noticed.'},
+  {type:'message',speaker:'Dominique',text:'Yuki you need to chill—'},
+  {type:'message',speaker:'Yuki',text:'I\'m completely calm.'},
+  {type:'message',speaker:'Ash',text:'I noticed too. For what it\'s worth.'},
+  {type:'narration',text:'Ash says it simply. Factually. Which is somehow more unsettling.'},
+  {type:'message',speaker:'Ren',text:'If we\'re doing this — {name}, who were you with.'},
+  {type:'narration',text:'Not a question. The tone is new. It has an edge.'},
+  {type:'message',speaker:'Kai',text:'Guys, that\'s not—'},
+  {type:'message',speaker:'Ren',text:'Kai.'},
+  {type:'narration',text:'Even Kai goes quiet.'},
+  {type:'choice',options:[
+    {text:'"I was at the library. Alone. And I don\'t owe any of you a report."',effects:{Ren:3,Ash:3,dark_Yuki:6,dark_Ren:6,dark_Ash:5},response:[
+      {type:'message',speaker:'Ren',text:'...Correct. You don\'t.'},
+      {type:'message',speaker:'Yuki',text:'You\'re right. I\'m sorry. 🌙 I just worry.'},
+      {type:'message',speaker:'Dominique',text:'Thank you for saying that {name}. Also same but in a more charming way.'},
+      {type:'narration',text:'A pause in the chat. Then Ash: "I\'ll stop. It\'s a bad habit." The apologies feel real. The monitoring doesn\'t stop.'},
+    ]},
+    {text:'"Why does it matter? Are you all keeping tabs on me?"',effects:{dark_Yuki:8,dark_Ren:5,dark_Ash:6,dark_Kai:3,Dominique:4},flag:{key:'noticing_dark',value:true},response:[
+      {type:'message',speaker:'Dominique',text:'...Okay so yes? But for loving reasons?'},
+      {type:'message',speaker:'Kai',text:'We just care, {name}, we\'re not—'},
+      {type:'message',speaker:'Yuki',text:'Yes. 🌙 We are. I am. I don\'t pretend otherwise.'},
+      {type:'narration',text:'Yuki\'s honesty is a closed door. There\'s nowhere to argue against someone who fully admits what they\'re doing.'},
+      {type:'narration',text:'You start paying attention to things you hadn\'t before. The frequency. The overlap. The fact that one of them always seems to know where you\'ve been.'},
+    ]},
+    {text:'"It\'s sweet that you worry. I\'m okay."',effects:{Kai:5,dark_Yuki:3,dark_Ren:2},response:[
+      {type:'message',speaker:'Kai',text:'🥺 We just really like you being here.'},
+      {type:'message',speaker:'Dominique',text:'Understatement of the century but okay.'},
+      {type:'message',speaker:'Yuki',text:'Good. You\'re okay. 🌙 That\'s all I need to know.'},
+      {type:'narration',text:'The warmth is real. The hold is also real. You\'re learning to see them both at once.'},
+    ]},
+  ]},
+  {type:'narration',text:'A week passes in a specific kind of intensity — beautiful and enclosing at once. They\'re not cruel. They\'re not unkind. They\'re something more precise: devoted in a way that is moving ever so slightly past the line of what you consented to.'},
+  {type:'narration',text:'Dominique brings you something every day. Ren\'s case reading time has migrated to your apartment. Kai checks in morning and night without fail. Yuki has started leaving small things outside your door — a book, a snack, a note. Ash has memorized your schedule down to the minute and rearranged his own around it.'},
+  {type:'message',speaker:'Dominique',text:'{name}. Honest question. Are you happy?'},
+  {type:'choice',options:[
+    {text:'"Honestly? Yes. But also a little overwhelmed."',effects:{Dominique:5,Kai:4,Ren:3,dark_Yuki:2},response:[
+      {type:'message',speaker:'Dominique',text:'Okay. Okay. We can — dial it back. A little.'},
+      {type:'message',speaker:'Kai',text:'We\'ve been a lot, haven\'t we. I\'m sorry {name} 😔'},
+      {type:'message',speaker:'Ren',text:'...I\'ll give you more space.'},
+      {type:'message',speaker:'Yuki',text:'I won\'t. 🌙 But I\'ll be honest about it.'},
+      {type:'message',speaker:'Ash',text:'Tell me if I need to back off.'},
+      {type:'narration',text:'It\'s not a perfect answer. But it\'s an honest one from every angle.'},
+    ]},
+    {text:'"I\'m thinking about leaving for a while. Getting some space."',effects:{dark_Yuki:15,dark_Ren:10,dark_Ash:10,dark_Dominique:8,dark_Kai:6},flag:{key:'triedToRun',value:true},response:[
+      {type:'narration',text:'The chat goes still. Not silent — still. Like a held breath.'},
+      {type:'message',speaker:'Yuki',text:'Leaving. 🌙'},
+      {type:'message',speaker:'Yuki',text:'Where would you go.'},
+      {type:'message',speaker:'Ren',text:'{name}. We should talk. Come up to 12.'},
+      {type:'message',speaker:'Dominique',text:'Hey, hey hey, let\'s just — let\'s all relax.'},
+      {type:'message',speaker:'Ash',text:'I know your flight search history. You looked up a ticket yesterday.'},
+      {type:'narration',text:'The air changes. They know. They all know.'},
+      {type:'narration',text:'And not a single one of them is going to let you go.'},
+      {type:'branch',scene:null}, // → BAD ENDING PATH
+    ]},
+  ]},
+  {type:'branch',scene:null}, // → CH13 (non-run path)
+];
+CH11[CH11.length-1].scene=CH12;
+
+// ─── BAD ENDING TRIGGER ─────────────────────
+const BAD_END_LEAD=[
+  {type:'chapter',text:'✦ Chapter 13: The Cage Closes ✦'},
+  {type:'narration',text:'You pack a bag. You tell yourself it\'s just space. You believe it less with every item you fold.'},
+  {type:'narration',text:'At 7 AM you open your front door and they\'re all there. In the hallway. Waiting. Like they knew. (Ash knew. He shared it with the others at 3 AM.)'},
+  {type:'message',speaker:'Yuki',text:'Don\'t. 🌙'},
+  {type:'message',speaker:'Kai',text:'{name}... please. Just come upstairs. We can talk.'},
+  {type:'message',speaker:'Ren',text:'You\'re not leaving.'},
+  {type:'narration',text:'Not a question. Not a threat. A fact that Ren has already decided.'},
+  {type:'message',speaker:'Dominique',text:'We\'re not — we\'re not going to force anything. But please. Please just stay for tonight. One night.'},
+  {type:'message',speaker:'Ash',text:'You looked up flights. Three destinations. I flagged all of them.'},
+  {type:'choice',options:[
+    {text:'Drop the bag. "...One night."',effects:{Kai:5,Dominique:5,dark_Yuki:5,dark_Ren:5,dark_Ash:5},response:[
+      {type:'narration',text:'The one night becomes something else entirely.'},
+      {type:'end',which:'bad'},
+    ]},
+    {text:'Try to push past them.',effects:{dark_Yuki:20,dark_Ren:15,dark_Ash:15,dark_Dominique:10,dark_Kai:8},flag:{key:'triedToRun',value:true},response:[
+      {type:'narration',text:'You get three steps. Yuki\'s hand closes around your wrist — gentle, unbreakable.'},
+      {type:'message',speaker:'Yuki',text:'No. 🌙'},
+      {type:'narration',text:'His eyes are calm. That\'s what does it. Not anger. Certainty.'},
+      {type:'end',which:'bad'},
+    ]},
+  ]},
+];
+
+// ─── CHAPTER 13: NORMAL PATH ─────────────────
+const CH13=[
+  {type:'chapter',text:'✦ Chapter 13: What You Want ✦'},
+  {type:'narration',text:'You\'ve been with them almost two months now. Two months of group chats and brunch and rooftop nights and 1 AM texts. Two months of five different kinds of love learning to live in the same space as you.'},
+  {type:'narration',text:'It\'s time to be honest.'},
+  {type:'message',speaker:'Kai',text:'Hey {name}. No pressure. But... where are we? Like. Where are we going? 😊'},
+  {type:'message',speaker:'Dominique',text:'WOW KAI JUST SAID IT. That took guts. Solidarity, man.'},
+  {type:'message',speaker:'Ren',text:'He has a point. The ambiguity is becoming — unsustainable.'},
+  {type:'message',speaker:'Yuki',text:'I\'ve known what I want for a while. 🌙'},
+  {type:'message',speaker:'Ash',text:'Same.'},
+  {type:'choice',options:[
+    {text:'I want all of you. Impossibly, inconveniently — all five.',effects:{Kai:8,Ren:8,Yuki:8,Dominique:8,Ash:8},flag:{key:'poly_path',value:true},response:[
+      {type:'message',speaker:'Dominique',text:'...'},
+      {type:'message',speaker:'Dominique',text:'I need to sit down.'},
+      {type:'message',speaker:'Kai',text:'I... didn\'t expect that. But I\'m not — I\'m not unhappy about it? 😭'},
+      {type:'message',speaker:'Ren',text:'That\'s unconventional.'},
+      {type:'message',speaker:'Dominique',text:'Ren is that a yes'},
+      {type:'message',speaker:'Ren',text:'...Yes.'},
+      {type:'message',speaker:'Yuki',text:'I told you I\'d wait. 🌙 I meant it. And now I don\'t have to.'},
+      {type:'message',speaker:'Ash',text:'I\'m in.'},
+      {type:'branch',scene:null}, // → GOOD END PATH
+    ]},
+    {text:'There\'s one of you I\'ve been thinking about more than the others.',effects:{},flag:{key:'single_path',value:true},response:[
+      {type:'narration',text:'The chat goes quiet. Then:'},
+      {type:'message',speaker:'Dominique',text:'Okay. Who. I can take it. Probably.'},
+      {type:'narration',text:'(You don\'t answer in the chat. You go knock on the right door.)'},
+      {type:'branch',scene:null}, // → Normal end path
+    ]},
+  ]},
+];
+
+// Wire BAD ending and CH13 into CH12
+const ch12RunBeat=CH12.find(b=>b.type==='choice');
+if(ch12RunBeat){
+  ch12RunBeat.options[1].response[ch12RunBeat.options[1].response.length-1].scene=BAD_END_LEAD;
+}
+CH12[CH12.length-1].scene=CH13;
+
+// ─── GOOD ENDING PATH ─────────────────────────
+const GOOD_PATH=[
+  {type:'chapter',text:'✦ Chapter 14: Five and One ✦'},
+  {type:'narration',text:'What follows is the most chaotic three days of your life.'},
+  {type:'narration',text:'Ren calls it "logistically absurd." Dominique calls it "the best development in the history of this building." Yuki says nothing but smiles more in a week than you\'ve seen in two months. Kai makes everyone dinner and cries a little. Ash updates his schedule spreadsheet to include all six of them.'},
+  {type:'message',speaker:'Kai',text:'So I was reading about polyamory last night and there are a LOT of resources and I have thoughts and also questions and also I made lasagna 😭'},
+  {type:'message',speaker:'Dominique',text:'Kai made lasagna means this is officially happening. It\'s law.'},
+  {type:'message',speaker:'Ren',text:'We need to establish rules.'},
+  {type:'message',speaker:'Dominique',text:'We need to establish VIBES first, Ren—'},
+  {type:'message',speaker:'Ash',text:'Both.'},
+  {type:'message',speaker:'Yuki',text:'{name}, how are you feeling? 🌙'},
+  {type:'choice',options:[
+    {text:'"Terrified. But the good kind."',effects:{Kai:6,Ren:6,Yuki:6,Dominique:6,Ash:6},response:[
+      {type:'message',speaker:'Dominique',text:'THAT\'S THE SPIRIT.'},
+      {type:'message',speaker:'Kai',text:'The good kind of terrified is my favorite kind 🥹'},
+      {type:'message',speaker:'Ren',text:'We\'ll figure it out.'},
+      {type:'message',speaker:'Ash',text:'We\'re already figuring it out.'},
+      {type:'message',speaker:'Yuki',text:'We have plenty of time. 🌙'},
+    ]},
+    {text:'"I just want everyone to be okay. Is everyone okay?"',effects:{Kai:7,Dominique:5,Ash:5,Yuki:4,Ren:4},response:[
+      {type:'message',speaker:'Kai',text:'I\'m more than okay. I\'m kind of — a lot. In a good way. 😊'},
+      {type:'message',speaker:'Dominique',text:'I\'m great, I\'m incredible, I\'m having an emotion 😭'},
+      {type:'message',speaker:'Ren',text:'...I\'m fine.'},
+      {type:'message',speaker:'Ash',text:'Yes.'},
+      {type:'message',speaker:'Yuki',text:'I\'ve never been better, {name}. Not once. 🌙'},
+    ]},
+  ]},
+  {type:'narration',text:'The months that follow are not simple. But they are — full. Full in the way that you stopped believing life could be.'},
+  {type:'narration',text:'Five different rhythms, five different ways of loving you, all of them learning to exist in the same orbit. There are arguments (Ren vs. Dominique, always, forever). There is Kai mediating at 1 AM with tea. There is Ash, keeping track of everything quietly. There is Yuki, finally at peace with sharing because sharing means staying.'},
+  {type:'narration',text:'🔞 The nights are their own world. Some nights it\'s just one of them. Some nights it\'s more. Dominique — loud, joyful, completely present. Ren — devastating and precise and unguarded in a way he only ever shows you. Yuki — consuming, tender, finally safe. Kai — so warm you forget you can be cold. Ash — slow and certain and overwhelming. There is nothing you want that you don\'t have. There is nowhere you\'re not completely, entirely held.',spicy:true},
+  {type:'end',which:'good'},
+];
+
+// ─── NORMAL ENDING CHOICE (declared before wiring uses it) ───
+const NORMAL_CHOICE_SCENE=[
+  {type:'chapter',text:'✦ Chapter 14: One Door ✦'},
+  {type:'narration',text:'You stand in the hallway. Five doors. All of them real. All of them lit.'},
+  {type:'narration',text:'You\'ve been honest with yourself for long enough. There\'s one door you keep coming back to.'},
+  {type:'choice',options:[
+    {text:'Knock on 12C — Kai\'s door.',effects:{Kai:10},response:[{type:'end',which:'normal_Kai'}]},
+    {text:'Knock on 12D — Ren\'s door.',effects:{Ren:10},response:[{type:'end',which:'normal_Ren'}]},
+    {text:'Knock on 12A — Yuki\'s door.',effects:{Yuki:10},response:[{type:'end',which:'normal_Yuki'}]},
+    {text:'Knock on 12B — Dominique\'s door.',effects:{Dominique:10},response:[{type:'end',which:'normal_Dominique'}]},
+    {text:'Knock on 12E — Ash\'s door.',effects:{Ash:10},response:[{type:'end',which:'normal_Ash'}]},
+  ]},
+];
+
+// ─── WIRE ALL SCENE BRANCHES (all scenes now declared) ───────
+(function wireScenes(){
+  // CH13: option[0] poly → GOOD_PATH, option[1] single → NORMAL_CHOICE_SCENE
+  const ch13Choice=CH13.find(b=>b.type==='choice');
+  if(ch13Choice){
+    const polyResp=ch13Choice.options[0].response;
+    const polyBranch=polyResp[polyResp.length-1];
+    if(polyBranch&&polyBranch.type==='branch')polyBranch.scene=GOOD_PATH;
+    const singleResp=ch13Choice.options[1].response;
+    const singleBranch=singleResp[singleResp.length-1];
+    if(singleBranch&&singleBranch.type==='branch')singleBranch.scene=NORMAL_CHOICE_SCENE;
+  }
+  // CH12: option[1] "leave" → BAD_END_LEAD (already wired above, guard re-wire)
+  const ch12Choice=CH12.find(b=>b.type==='choice');
+  if(ch12Choice){
+    const runResp=ch12Choice.options[1].response;
+    const runBranch=runResp[runResp.length-1];
+    if(runBranch&&runBranch.type==='branch'&&!runBranch.scene)runBranch.scene=BAD_END_LEAD;
+  }
+})();
+
+// Close sidebar on outside click (mobile)
+document.getElementById('messages').addEventListener('click',()=>{
+  const sb=document.getElementById('sidebar');
+  if(window.innerWidth<=720&&sb.classList.contains('open'))sb.classList.remove('open');
+});
+</script>
+</body>
+</html>
